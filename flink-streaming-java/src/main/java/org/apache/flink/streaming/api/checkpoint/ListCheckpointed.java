@@ -108,6 +108,7 @@ import java.util.List;
  *
  * @param <T> The type of the operator state.
  */
+//同步快照机制
 @PublicEvolving
 public interface ListCheckpointed<T extends Serializable> {
 

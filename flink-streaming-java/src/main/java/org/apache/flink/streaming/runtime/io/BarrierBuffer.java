@@ -44,7 +44,7 @@ import static org.apache.flink.util.Preconditions.checkNotNull;
 
 /**
  * The barrier buffer is {@link CheckpointBarrierHandler} that blocks inputs with barriers until
- * all inputs have received the barrier for a given checkpoint.
+ *  * all inputs have received the barrier for a given checkpoint.
  *
  * <p>To avoid back-pressuring the input streams (which may cause distributed deadlocks), the
  * BarrierBuffer continues receiving buffers from the blocked channels and stores them internally until
@@ -64,6 +64,7 @@ public class BarrierBuffer implements CheckpointBarrierHandler {
 	/** The total number of channels that this buffer handles data from. */
 	private final int totalNumberOfInputChannels;
 
+//	用于存放barrier没有到齐柱塞的数据
 	/** To utility to write blocked data to a file channel. */
 	private final BufferBlocker bufferBlocker;
 
@@ -71,6 +72,7 @@ public class BarrierBuffer implements CheckpointBarrierHandler {
 	 * The pending blocked buffer/event sequences. Must be consumed before requesting further data
 	 * from the input gate.
 	 */
+//	这个用于装barrier到齐后刷入的所有BufferBlocker数据
 	private final ArrayDeque<BufferOrEventSequence> queuedBuffered;
 
 	/**
@@ -165,6 +167,8 @@ public class BarrierBuffer implements CheckpointBarrierHandler {
 				next = inputGate.getNextBufferOrEvent();
 			}
 			else {
+//				先处理barrier到齐而全部数据刷入buffer的数据
+//				获取barrier对齐而放入所有缓存数据的buffer
 				next = Optional.ofNullable(currentBuffered.getNext());
 				if (!next.isPresent()) {
 					completeBufferedSequence();
@@ -186,17 +190,21 @@ public class BarrierBuffer implements CheckpointBarrierHandler {
 			}
 
 			BufferOrEvent bufferOrEvent = next.get();
+//			判断是否柱塞，barrier没有到齐柱塞会先加入BufferBlocker，并且他的inputchannel是否柱塞的表示为true
 			if (isBlocked(bufferOrEvent.getChannelIndex())) {
 				// if the channel is blocked, we just store the BufferOrEvent
 				bufferBlocker.add(bufferOrEvent);
 				checkSizeLimit();
 			}
 			else if (bufferOrEvent.isBuffer()) {
+//				只有从前面currentBuffered中取的数据才会走这里
 				return bufferOrEvent;
 			}
+//			当是一个barrier时的处理逻辑，涉及对齐前解除柱塞，获取前面柱塞的数据
 			else if (bufferOrEvent.getEvent().getClass() == CheckpointBarrier.class) {
 				if (!endOfStream) {
 					// process barriers only if there is a chance of the checkpoint completing
+//					barrier的处理逻辑
 					processBarrier((CheckpointBarrier) bufferOrEvent.getEvent(), bufferOrEvent.getChannelIndex());
 				}
 			}
@@ -238,6 +246,8 @@ public class BarrierBuffer implements CheckpointBarrierHandler {
 
 		// -- general code path for multiple input channels --
 
+		// -- 判断是否需要创建一个新的checkpoint --
+
 		if (numBarriersReceived > 0) {
 			// this is only true if some alignment is already progress and was not canceled
 
@@ -260,10 +270,12 @@ public class BarrierBuffer implements CheckpointBarrierHandler {
 				releaseBlocksAndResetBarriers();
 
 				// begin a the new checkpoint
+//				出现一个新的递增checkpointid时开启一个新的checkpoint
 				beginNewAlignment(barrierId, channelIndex);
 			}
 			else {
 				// ignore trailing barrier from an earlier checkpoint (obsolete now)
+//				忽略掉来了一个比上一个完成的checkpoint还要前的checkpoint
 				return;
 			}
 		}
@@ -279,6 +291,8 @@ public class BarrierBuffer implements CheckpointBarrierHandler {
 
 		// check if we have all barriers - since canceled checkpoints always have zero barriers
 		// this can only happen on a non canceled checkpoint
+
+		//		当barrier对齐时
 		if (numBarriersReceived + numClosedChannels == totalNumberOfInputChannels) {
 			// actually trigger checkpoint
 			if (LOG.isDebugEnabled()) {
@@ -287,8 +301,9 @@ public class BarrierBuffer implements CheckpointBarrierHandler {
 					receivedBarrier.getId(),
 					receivedBarrier.getTimestamp());
 			}
-
+//			释放柱塞
 			releaseBlocksAndResetBarriers();
+//			进行checkpoint
 			notifyCheckpoint(receivedBarrier);
 		}
 	}
@@ -523,11 +538,13 @@ public class BarrierBuffer implements CheckpointBarrierHandler {
 				inputGate.getOwningTaskName());
 
 			// since we did not fully drain the previous sequence, we need to allocate a new buffer for this one
+//			得到所有的完成对齐在缓冲区的数据集合
 			BufferOrEventSequence bufferedNow = bufferBlocker.rollOverWithoutReusingResources();
 			if (bufferedNow != null) {
 				bufferedNow.open();
 				queuedBuffered.addFirst(currentBuffered);
 				numQueuedBytes += currentBuffered.size();
+//				将barrier到齐后缓存的数据刷入
 				currentBuffered = bufferedNow;
 			}
 		}

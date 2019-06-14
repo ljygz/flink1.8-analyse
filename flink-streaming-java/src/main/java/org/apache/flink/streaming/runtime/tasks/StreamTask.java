@@ -576,6 +576,7 @@ public abstract class StreamTask<OUT, OP extends StreamOperator<OUT>>
 		}
 	}
 
+//	当barrier到齐时触发checkpoint，并保存task所有operator的状态
 	@Override
 	public void triggerCheckpointOnBarrier(
 			CheckpointMetaData checkpointMetaData,
@@ -628,9 +629,11 @@ public abstract class StreamTask<OUT, OP extends StreamOperator<OUT>>
 
 				// Step (1): Prepare the checkpoint, allow operators to do some pre-barrier work.
 				//           The pre-barrier work should be nothing or minimal in the common case.
+//				准备往下游发的barrier
 				operatorChain.prepareSnapshotPreBarrier(checkpointMetaData.getCheckpointId());
 
 				// Step (2): Send the checkpoint barrier downstream
+//				发
 				operatorChain.broadcastCheckpointBarrier(
 						checkpointMetaData.getCheckpointId(),
 						checkpointMetaData.getTimestamp(),
@@ -726,6 +729,7 @@ public abstract class StreamTask<OUT, OP extends StreamOperator<OUT>>
 			storage,
 			checkpointMetrics);
 
+//		保存所有operator的状态
 		checkpointingOperation.executeCheckpointing();
 	}
 
@@ -1052,6 +1056,7 @@ public abstract class StreamTask<OUT, OP extends StreamOperator<OUT>>
 
 			try {
 				for (StreamOperator<?> op : allOperators) {
+//					遍历保存task中所有operater的状态
 					checkpointStreamOperator(op);
 				}
 
@@ -1109,7 +1114,7 @@ public abstract class StreamTask<OUT, OP extends StreamOperator<OUT>>
 		@SuppressWarnings("deprecation")
 		private void checkpointStreamOperator(StreamOperator<?> op) throws Exception {
 			if (null != op) {
-
+//				走到了operator的状态保存
 				OperatorSnapshotFutures snapshotInProgress = op.snapshotState(
 						checkpointMetaData.getCheckpointId(),
 						checkpointMetaData.getTimestamp(),

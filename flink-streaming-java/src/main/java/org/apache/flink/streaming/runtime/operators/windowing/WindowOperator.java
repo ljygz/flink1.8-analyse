@@ -380,6 +380,7 @@ public class WindowOperator<K, IN, ACC, OUT, W extends Window>
 			// need to make sure to update the merging state in state
 			mergingWindows.persist();
 		} else {
+//			遍历这个元素属于的窗口们
 			for (W window: elementWindows) {
 
 				// drop if the window is already late
@@ -388,6 +389,9 @@ public class WindowOperator<K, IN, ACC, OUT, W extends Window>
 				}
 				isSkippedElement = false;
 
+//				窗口与状态关联，通过这个window作为namespace,
+//				状态中有个window的map<namespace,list<>>,
+//				后面通过这个来取整个窗口的数据
 				windowState.setCurrentNamespace(window);
 				windowState.add(element.getValue());
 
@@ -398,11 +402,12 @@ public class WindowOperator<K, IN, ACC, OUT, W extends Window>
 
 //				来的元素判断时候触发
 				if (triggerResult.isFire()) {
+//					从map中拿到整个窗口的数据contents
 					ACC contents = windowState.get();
 					if (contents == null) {
 						continue;
 					}
-//					窗口执行process(),contents是个iterator
+//					窗口执行用户process(),contents是个iterator
 					emitWindowContents(window, contents);
 				}
 

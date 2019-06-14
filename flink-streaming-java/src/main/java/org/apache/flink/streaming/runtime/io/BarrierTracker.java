@@ -36,6 +36,7 @@ import java.util.ArrayDeque;
 import java.util.Optional;
 
 /**
+ * 不会柱塞input channels来达到完美一次语义
  * The BarrierTracker keeps track of what checkpoint barriers have been received from
  * which input channels. Once it has observed all checkpoint barriers for a checkpoint ID,
  * it notifies its listener of a completed checkpoint.

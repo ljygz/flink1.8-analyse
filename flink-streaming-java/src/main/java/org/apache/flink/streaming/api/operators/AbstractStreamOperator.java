@@ -376,6 +376,8 @@ public abstract class AbstractStreamOperator<OUT>
 		// this is purely for subclasses to override
 	}
 
+
+//	获取快照到snapshotContext,
 	@Override
 	public final OperatorSnapshotFutures snapshotState(long checkpointId, long timestamp, CheckpointOptions checkpointOptions,
 			CheckpointStreamFactory factory) throws Exception {
@@ -439,6 +441,7 @@ public abstract class AbstractStreamOperator<OUT>
 			KeyedStateCheckpointOutputStream out;
 
 			try {
+//				得到要保存快照的流
 				out = context.getRawKeyedOperatorStateOutput();
 			} catch (Exception exception) {
 				throw new Exception("Could not open raw keyed operator state stream for " +
@@ -449,7 +452,7 @@ public abstract class AbstractStreamOperator<OUT>
 				KeyGroupsList allKeyGroups = out.getKeyGroupList();
 				for (int keyGroupIdx : allKeyGroups) {
 					out.startNewKeyGroup(keyGroupIdx);
-
+//				将快照流写
 					timeServiceManager.snapshotStateForKeyGroup(
 						new DataOutputViewStreamWrapper(out), keyGroupIdx);
 				}

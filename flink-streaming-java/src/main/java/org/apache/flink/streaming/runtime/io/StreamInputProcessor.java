@@ -205,7 +205,10 @@ public class StreamInputProcessor<IN> {
 					}
 				}
 			}
-
+//			获取数据到上面的currentRecordDeserializer
+//			barrierHandler根据语义
+//					BarrierBuffer 会柱塞
+//					BarrierTracker
 			final BufferOrEvent bufferOrEvent = barrierHandler.getNextNonBlocked();
 			if (bufferOrEvent != null) {
 				if (bufferOrEvent.isBuffer()) {
