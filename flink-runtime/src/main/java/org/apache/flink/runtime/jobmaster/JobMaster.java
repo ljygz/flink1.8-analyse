@@ -322,6 +322,7 @@ public class JobMaster extends FencedRpcEndpoint<JobMasterId> implements JobMast
 		// make sure we receive RPC and async calls
 		start();
 
+//		包含启动coordinator中周期线程
 		return callAsyncWithoutFencing(() -> startJobExecution(newJobMasterId), RpcUtils.INF_TIMEOUT);
 	}
 
@@ -967,9 +968,11 @@ public class JobMaster extends FencedRpcEndpoint<JobMasterId> implements JobMast
 			}, getMainThreadExecutor());
 	}
 
+//
 	private void startCheckpointScheduler(final CheckpointCoordinator checkpointCoordinator) {
 		if (checkpointCoordinator.isPeriodicCheckpointingConfigured()) {
 			try {
+//				jobmanager 开启coordinator调度
 				checkpointCoordinator.startCheckpointScheduler();
 			} catch (IllegalStateException ignored) {
 				// Concurrent shut down of the coordinator
@@ -1040,6 +1043,7 @@ public class JobMaster extends FencedRpcEndpoint<JobMasterId> implements JobMast
 
 		log.info("Starting execution of job {} ({}) under job master id {}.", jobGraph.getName(), jobGraph.getJobID(), newJobMasterId);
 
+//		包含修改job状态 启动coordinator发送barrier线程
 		resetAndScheduleExecutionGraph();
 
 		return Acknowledge.get();
@@ -1154,6 +1158,7 @@ public class JobMaster extends FencedRpcEndpoint<JobMasterId> implements JobMast
 		executionGraph.registerJobStatusListener(jobStatusListener);
 
 		try {
+//			这个地方会触发job状态修改runing 启动coordinator线程发送barrier
 			executionGraph.scheduleForExecution();
 		}
 		catch (Throwable t) {

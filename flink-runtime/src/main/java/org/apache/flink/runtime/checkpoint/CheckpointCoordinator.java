@@ -391,11 +391,12 @@ public class CheckpointCoordinator {
 	 * the checkpoint will be declined.
 	 * @return <code>true</code> if triggering the checkpoint succeeded.
 	 */
+//	触发一个新的检测点,在调度器类ScheduledTrigger的run方法中会执行一次，触发一次checkpoint
 	public boolean triggerCheckpoint(long timestamp, boolean isPeriodic) {
 		return triggerCheckpoint(timestamp, checkpointProperties, null, isPeriodic).isSuccess();
 	}
 
-//	触发逻辑
+//	触发发送一次checkpoint逻辑
 	@VisibleForTesting
 	public CheckpointTriggerResult triggerCheckpoint(
 			long timestamp,
@@ -446,6 +447,7 @@ public class CheckpointCoordinator {
 						currentPeriodicTrigger = null;
 					}
 					// Reassign the new trigger to the currentPeriodicTrigger
+//					当时间还没有到最短两次间隔，将一次触发checkpoint线程放入定时器
 					currentPeriodicTrigger = timer.scheduleAtFixedRate(
 							new ScheduledTrigger(),
 							durationTillNextMillis, baseInterval, TimeUnit.MILLISECONDS);
@@ -455,9 +457,10 @@ public class CheckpointCoordinator {
 			}
 		}
 
-//		判断task是否都在运行
+//		判断source task是否都在运行
 		// check if all tasks that we need to trigger are running.
 		// if not, abort the checkpoint
+//		下游有多少个需要barrier就有多少个execution
 		Execution[] executions = new Execution[tasksToTrigger.length];
 		for (int i = 0; i < tasksToTrigger.length; i++) {
 			Execution ee = tasksToTrigger[i].getCurrentExecutionAttempt();
@@ -495,7 +498,7 @@ public class CheckpointCoordinator {
 		}
 
 		// we will actually trigger this checkpoint!
-//		触发checkpoint
+//		触发一次checkpoint
 		// we lock with a special lock to make sure that trigger requests do not overtake each other.
 		// this is not done with the coordinator-wide lock, because the 'checkpointIdCounter'
 		// may issue blocking operations. Using a different lock than the coordinator-wide lock,
@@ -552,7 +555,7 @@ public class CheckpointCoordinator {
 						checkpoint.abortExpired();
 						pendingCheckpoints.remove(checkpointID);
 						rememberRecentCheckpointId(checkpointID);
-
+//						如果没有取消的过期，触发请求启动线程触发一次checkpoint
 						triggerQueuedRequests();
 					}
 				}
@@ -582,6 +585,7 @@ public class CheckpointCoordinator {
 						}
 
 						// make sure the minimum interval between checkpoints has passed
+//						下一次最早的时间
 						final long earliestNext = lastCheckpointCompletionNanos + minPauseBetweenCheckpointsNanos;
 						final long durationTillNextMillis = (earliestNext - System.nanoTime()) / 1_000_000;
 
@@ -593,6 +597,7 @@ public class CheckpointCoordinator {
 
 							// Reassign the new trigger to the currentPeriodicTrigger
 							currentPeriodicTrigger = timer.scheduleAtFixedRate(
+//								当时间还没有到最短两次间隔，将一次触发checkpoint线程放入定时器
 									new ScheduledTrigger(),
 									durationTillNextMillis, baseInterval, TimeUnit.MILLISECONDS);
 
@@ -627,6 +632,8 @@ public class CheckpointCoordinator {
 						checkpointStorageLocation.getLocationReference());
 
 				// send the messages to the tasks that trigger their checkpoint
+
+//			——————————————————————真正触发向下solt每一个发barrier逻辑————————————————————————————
 				for (Execution execution: executions) {
 					execution.triggerCheckpoint(checkpointID, timestamp, checkpointOptions);
 				}
@@ -1173,6 +1180,8 @@ public class CheckpointCoordinator {
 	//  Periodic scheduling of checkpoints
 	// --------------------------------------------------------------------------------------------
 
+//	开启周期的运行线程，一次线程(线程会周期的执行)是一次触发并向下发barrier
+//	会有一个actor消息驱动 会有一个job状态的监听，当job状态变为runing 马上startCheckpointScheduler()启动周期发送barrier线程
 	public void startCheckpointScheduler() {
 		synchronized (lock) {
 			if (shutdown) {
@@ -1186,6 +1195,7 @@ public class CheckpointCoordinator {
 			long initialDelay = ThreadLocalRandom.current().nextLong(
 				minPauseBetweenCheckpointsNanos / 1_000_000L, baseInterval + 1L);
 			currentPeriodicTrigger = timer.scheduleAtFixedRate(
+//				固定速率周期性的触发checkpoint,通过执行一次ScheduledTrigger()线程，并传入周期执行的时间周期
 					new ScheduledTrigger(), initialDelay, baseInterval, TimeUnit.MILLISECONDS);
 		}
 	}
@@ -1229,6 +1239,7 @@ public class CheckpointCoordinator {
 
 	// ------------------------------------------------------------------------
 
+//	这个线程运行一次就是触发一次checkpoint
 	private final class ScheduledTrigger implements Runnable {
 
 		@Override

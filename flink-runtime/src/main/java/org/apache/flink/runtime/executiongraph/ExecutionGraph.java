@@ -890,6 +890,7 @@ public class ExecutionGraph implements AccessExecutionGraph {
 
 		final long currentGlobalModVersion = globalModVersion;
 
+//		这个地方将job状态设置成 runing 会触发监听 run时启动coordinator
 		if (transitionState(JobStatus.CREATED, JobStatus.RUNNING)) {
 
 			final CompletableFuture<Void> newSchedulingFuture;
@@ -1786,6 +1787,7 @@ public class ExecutionGraph implements AccessExecutionGraph {
 		}
 	}
 
+//	job状态改变 会触发一些 包括变runing时创建coordinator
 	private void notifyJobStatusChange(JobStatus newState, Throwable error) {
 		if (jobStatusListeners.size() > 0) {
 			final long timestamp = System.currentTimeMillis();
