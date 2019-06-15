@@ -147,6 +147,7 @@ import static org.apache.flink.util.Preconditions.checkState;
  * given task</li>
  * </ul>
  */
+//jobmaster就是新的jobmanager
 public class JobMaster extends FencedRpcEndpoint<JobMasterId> implements JobMasterGateway, JobMasterService {
 
 	/** Default names for Flink's distributed components. */
@@ -225,6 +226,7 @@ public class JobMaster extends FencedRpcEndpoint<JobMasterId> implements JobMast
 
 	// ------------------------------------------------------------------------
 
+//	包含创建coordinator逻辑
 	public JobMaster(
 			RpcService rpcService,
 			JobMasterConfiguration jobMasterConfiguration,
@@ -296,6 +298,7 @@ public class JobMaster extends FencedRpcEndpoint<JobMasterId> implements JobMast
 		this.lastInternalSavepoint = null;
 
 		this.jobManagerJobMetricGroup = jobMetricGroupFactory.create(jobGraph);
+//		同时创建coordinator
 		this.executionGraph = createAndRestoreExecutionGraph(jobManagerJobMetricGroup);
 		this.jobStatusListener = null;
 
@@ -1180,6 +1183,7 @@ public class JobMaster extends FencedRpcEndpoint<JobMasterId> implements JobMast
 	}
 
 	private ExecutionGraph createExecutionGraph(JobManagerJobMetricGroup currentJobManagerJobMetricGroup) throws JobExecutionException, JobException {
+//		包含创建coordinator的逻辑
 		return ExecutionGraphBuilder.buildGraph(
 			null,
 			jobGraph,

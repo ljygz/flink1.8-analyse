@@ -90,7 +90,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-/**
+/**包含启动接口接收jobgraph后解析并创建jobmanager的
  * Base class for the Flink cluster entry points.
  *
  * <p>Specialization of this class can be used for the session mode and the per-job mode
@@ -219,9 +219,9 @@ public abstract class ClusterEntrypoint implements AutoCloseableAsync, FatalErro
 			// write host information into configuration
 			configuration.setString(JobManagerOptions.ADDRESS, commonRpcService.getAddress());
 			configuration.setInteger(JobManagerOptions.PORT, commonRpcService.getPort());
-
+//			起rest服务包括接收jobgraph的接口，以及接收后起jobmanager的工厂
 			final DispatcherResourceManagerComponentFactory<?> dispatcherResourceManagerComponentFactory = createDispatcherResourceManagerComponentFactory(configuration);
-
+//			将工厂真正开启对应接口
 			clusterComponent = dispatcherResourceManagerComponentFactory.create(
 				configuration,
 				commonRpcService,

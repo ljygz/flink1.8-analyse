@@ -80,6 +80,7 @@ public class ExecutionGraphBuilder {
 	 * If a prior execution graph exists, the JobGraph will be attached. If no prior execution
 	 * graph exists, then the JobGraph will become attach to a new empty execution graph.
 	 */
+//	创建executionGraph包含jobmanager创建coordinator逻辑
 	public static ExecutionGraph buildGraph(
 			@Nullable ExecutionGraph prior,
 			JobGraph jobGraph,
@@ -97,6 +98,7 @@ public class ExecutionGraphBuilder {
 			Logger log)
 		throws JobExecutionException, JobException {
 
+//		包含创建coordinator的逻辑
 		return buildGraph(
 			prior,
 			jobGraph,
@@ -341,7 +343,7 @@ public class ExecutionGraphBuilder {
 			}
 
 			final CheckpointCoordinatorConfiguration chkConfig = snapshotSettings.getCheckpointCoordinatorConfiguration();
-
+//			包含创建jobmanager的coordinator的逻辑
 			executionGraph.enableCheckpointing(
 				chkConfig.getCheckpointInterval(),
 				chkConfig.getCheckpointTimeout(),

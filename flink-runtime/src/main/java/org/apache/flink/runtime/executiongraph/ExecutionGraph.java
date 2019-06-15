@@ -513,6 +513,7 @@ public class ExecutionGraph implements AccessExecutionGraph {
 		checkpointStatsTracker = checkNotNull(statsTracker, "CheckpointStatsTracker");
 
 		// create the coordinator that triggers and commits checkpoints and holds the state
+//		jobmanager创建checkpoint
 		checkpointCoordinator = new CheckpointCoordinator(
 			jobInformation.getJobId(),
 			interval,

@@ -110,6 +110,7 @@ public final class JobSubmitHandler extends AbstractRestHandler<DispatcherGatewa
 
 		CompletableFuture<JobGraph> finalizedJobGraphFuture = uploadJobGraphFiles(gateway, jobGraphFuture, jarFiles, artifacts, configuration);
 
+//		包含创建jobmanager逻辑
 		CompletableFuture<Acknowledge> jobSubmissionFuture = finalizedJobGraphFuture.thenCompose(jobGraph -> gateway.submitJob(jobGraph, timeout));
 
 		return jobSubmissionFuture.thenCombine(jobGraphFuture,

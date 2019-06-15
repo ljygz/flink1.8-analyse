@@ -29,6 +29,7 @@ import java.util.List;
  * gets converted to a connection between two job vertices (due to
  * chaining/optimization).
  */
+//拓扑图中一条边
 @Internal
 public class StreamEdge implements Serializable {
 

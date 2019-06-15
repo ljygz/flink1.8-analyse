@@ -281,6 +281,7 @@ public class OperatorChain<OUT, OP extends StreamOperator<OUT>> implements Strea
 		List<Tuple2<WatermarkGaugeExposingOutput<StreamRecord<T>>, StreamEdge>> allOutputs = new ArrayList<>(4);
 
 		// create collectors for the network outputs
+//		创建走网络的output
 		for (StreamEdge outputEdge : operatorConfig.getNonChainedOutputs(userCodeClassloader)) {
 			@SuppressWarnings("unchecked")
 			RecordWriterOutput<T> output = (RecordWriterOutput<T>) streamOutputs.get(outputEdge);
@@ -289,10 +290,12 @@ public class OperatorChain<OUT, OP extends StreamOperator<OUT>> implements Strea
 		}
 
 		// Create collectors for the chained outputs
+//		遍历拓扑图中所有的边
+//		循环创建operater并设置operator中chained的ouput根据outputEdge
 		for (StreamEdge outputEdge : operatorConfig.getChainedOutputs(userCodeClassloader)) {
 			int outputId = outputEdge.getTargetId();
 			StreamConfig chainedOpConfig = chainedConfigs.get(outputId);
-
+//			创建operator并为operator设置output，最后放入streamTask的operater[]中
 			WatermarkGaugeExposingOutput<StreamRecord<T>> output = createChainedOperator(
 				containingTask,
 				chainedOpConfig,
@@ -354,9 +357,12 @@ public class OperatorChain<OUT, OP extends StreamOperator<OUT>> implements Strea
 			Map<Integer, StreamConfig> chainedConfigs,
 			ClassLoader userCodeClassloader,
 			Map<StreamEdge, RecordWriterOutput<?>> streamOutputs,
+//			一开始这是空的
 			List<StreamOperator<?>> allOperators,
 			OutputTag<IN> outputTag) {
 		// create the output that the operator writes to first. this may recursively create more operators
+//		得到对应operater 的output
+//		会一直循环下去直到chain的opearator全部创建完成然后在递归上去设置其ouput
 		WatermarkGaugeExposingOutput<StreamRecord<OUT>> chainedOperatorOutput = createOutputCollector(
 			containingTask,
 			operatorConfig,
@@ -366,8 +372,11 @@ public class OperatorChain<OUT, OP extends StreamOperator<OUT>> implements Strea
 			allOperators);
 
 		// now create the operator and give it the output collector to write its output to
+//		创建operator
+//		通过用户的逻辑类
 		OneInputStreamOperator<IN, OUT> chainedOperator = operatorConfig.getStreamOperator(userCodeClassloader);
 
+//		设置output
 		chainedOperator.setup(containingTask, operatorConfig, chainedOperatorOutput);
 
 		allOperators.add(chainedOperator);

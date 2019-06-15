@@ -180,7 +180,8 @@ public abstract class AbstractDispatcherResourceManagerComponentFactory<T extend
 				jobManagerMetricGroup);
 
 			final HistoryServerArchivist historyServerArchivist = HistoryServerArchivist.createHistoryServerArchivist(configuration, webMonitorEndpoint);
-
+//			创建对应的接口，接收jobgraph并启动jobanager
+//			通过返回的这个dispatcher调用submitjob()方法接收图
 			dispatcher = dispatcherFactory.createDispatcher(
 				configuration,
 				rpcService,
@@ -199,6 +200,7 @@ public abstract class AbstractDispatcherResourceManagerComponentFactory<T extend
 			resourceManagerRetrievalService.start(resourceManagerGatewayRetriever);
 
 			log.debug("Starting Dispatcher.");
+//			启动这个rpc包含上面的submitJob接口
 			dispatcher.start();
 			dispatcherLeaderRetrievalService.start(dispatcherGatewayRetriever);
 

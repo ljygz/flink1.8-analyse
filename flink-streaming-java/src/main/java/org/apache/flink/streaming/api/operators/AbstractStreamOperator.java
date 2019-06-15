@@ -166,8 +166,10 @@ public abstract class AbstractStreamOperator<OUT>
 	//  Life Cycle
 	// ------------------------------------------------------------------------
 
+//	设置streamOpeartor的ouput
 	@Override
 	public void setup(StreamTask<?, ?> containingTask, StreamConfig config, Output<StreamRecord<OUT>> output) {
+
 		final Environment environment = containingTask.getEnvironment();
 		this.container = containingTask;
 		this.config = config;

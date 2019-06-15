@@ -255,7 +255,7 @@ public abstract class Dispatcher extends FencedRpcEndpoint<DispatcherId> impleme
 	}
 
 	//------------------------------------------------------
-	// RPCs
+	// RPCs 代替了原来的jobmanager.scala的submit akka模型
 	//------------------------------------------------------
 
 	@Override
@@ -267,6 +267,7 @@ public abstract class Dispatcher extends FencedRpcEndpoint<DispatcherId> impleme
 				return FutureUtils.completedExceptionally(
 					new JobSubmissionException(jobGraph.getJobID(), "Job has already been submitted."));
 			} else {
+//				提交包含创建jobmanager逻辑
 				return internalSubmitJob(jobGraph);
 			}
 		} catch (FlinkException e) {
@@ -328,6 +329,7 @@ public abstract class Dispatcher extends FencedRpcEndpoint<DispatcherId> impleme
 	private CompletableFuture<Void> runJob(JobGraph jobGraph) {
 		Preconditions.checkState(!jobManagerRunnerFutures.containsKey(jobGraph.getJobID()));
 
+//		包含创建jobmanager逻辑
 		final CompletableFuture<JobManagerRunner> jobManagerRunnerFuture = createJobManagerRunner(jobGraph);
 
 		jobManagerRunnerFutures.put(jobGraph.getJobID(), jobManagerRunnerFuture);
@@ -348,6 +350,7 @@ public abstract class Dispatcher extends FencedRpcEndpoint<DispatcherId> impleme
 
 		final CompletableFuture<JobManagerRunner> jobManagerRunnerFuture = CompletableFuture.supplyAsync(
 			CheckedSupplier.unchecked(() ->
+//				创建jobmanager
 				jobManagerRunnerFactory.createJobManagerRunner(
 					jobGraph,
 					configuration,
@@ -441,6 +444,7 @@ public abstract class Dispatcher extends FencedRpcEndpoint<DispatcherId> impleme
 
 		return jobMasterGatewayFuture.thenCompose(
 			(JobMasterGateway jobMasterGateway) ->
+//				触发循环发送checkpoint线程
 				jobMasterGateway.rescaleJob(newParallelism, rescalingBehaviour, timeout));
 	}
 

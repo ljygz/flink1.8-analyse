@@ -45,7 +45,7 @@ import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 
-/**
+/**包含提交job然后创建jobmanager
  * REST endpoint for the {@link Dispatcher} component.
  */
 public class DispatcherRestEndpoint extends WebMonitorEndpoint<DispatcherGateway> {
