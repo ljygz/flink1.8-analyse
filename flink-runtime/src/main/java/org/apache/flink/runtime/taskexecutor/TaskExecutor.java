@@ -130,6 +130,7 @@ import static org.apache.flink.util.Preconditions.checkArgument;
 import static org.apache.flink.util.Preconditions.checkNotNull;
 
 /**
+ * 由taskManagerRunner创建
  * TaskExecutor implementation. The task executor is responsible for the execution of multiple
  * {@link Task}.
  */
@@ -424,6 +425,8 @@ public class TaskExecutor extends RpcEndpoint implements TaskExecutorGateway {
 	// Task lifecycle RPCs
 	// ----------------------------------------------------------------------
 
+//	这些都是rpc
+//	接收tdd 生成具体执行task
 	@Override
 	public CompletableFuture<Acknowledge> submitTask(
 			TaskDeploymentDescriptor tdd,
@@ -519,6 +522,7 @@ public class TaskExecutor extends RpcEndpoint implements TaskExecutorGateway {
 				taskRestore,
 				checkpointResponder);
 
+//			创建task
 			Task task = new Task(
 				jobInformation,
 				taskInformation,

@@ -506,6 +506,7 @@ public class OperatorChain<OUT, OP extends StreamOperator<OUT>> implements Strea
 			try {
 				watermarkGauge.setCurrentWatermark(mark.getTimestamp());
 				if (streamStatusProvider.getStreamStatus().isActive()) {
+//					所有定时器是否触发逻辑
 					operator.processWatermark(mark);
 				}
 			}

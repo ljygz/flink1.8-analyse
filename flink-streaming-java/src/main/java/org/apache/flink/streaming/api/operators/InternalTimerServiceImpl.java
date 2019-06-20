@@ -39,7 +39,7 @@ import java.util.concurrent.ScheduledFuture;
 import static org.apache.flink.util.Preconditions.checkArgument;
 import static org.apache.flink.util.Preconditions.checkNotNull;
 
-/**
+/**定时器服务会遍历所有已注册的定时器，先执行
  * {@link InternalTimerService} that stores timers on the Java heap.
  */
 public class InternalTimerServiceImpl<K, N> implements InternalTimerService<N>, ProcessingTimeCallback {
@@ -249,6 +249,7 @@ public class InternalTimerServiceImpl<K, N> implements InternalTimerService<N>, 
 
 		InternalTimer<K, N> timer;
 
+//		循环已注册的定时器，先执行定时器
 		while ((timer = eventTimeTimersQueue.peek()) != null && timer.getTimestamp() <= time) {
 			eventTimeTimersQueue.poll();
 			keyContext.setCurrentKey(timer.getKey());

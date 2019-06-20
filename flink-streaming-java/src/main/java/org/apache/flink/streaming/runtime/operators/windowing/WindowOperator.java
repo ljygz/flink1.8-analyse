@@ -65,13 +65,16 @@ import org.apache.flink.streaming.api.windowing.assigners.MergingWindowAssigner;
 import org.apache.flink.streaming.api.windowing.assigners.WindowAssigner;
 import org.apache.flink.streaming.api.windowing.triggers.Trigger;
 import org.apache.flink.streaming.api.windowing.triggers.TriggerResult;
+import org.apache.flink.streaming.api.windowing.windows.TimeWindow;
 import org.apache.flink.streaming.api.windowing.windows.Window;
 import org.apache.flink.streaming.runtime.operators.windowing.functions.InternalWindowFunction;
 import org.apache.flink.streaming.runtime.streamrecord.StreamRecord;
 import org.apache.flink.util.OutputTag;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Iterator;
 
 import static org.apache.flink.util.Preconditions.checkArgument;
 import static org.apache.flink.util.Preconditions.checkNotNull;
@@ -400,7 +403,7 @@ public class WindowOperator<K, IN, ACC, OUT, W extends Window>
 
 				TriggerResult triggerResult = triggerContext.onElement(element);
 
-//				来的元素判断时候触发
+//				来的元素判断时候触发，如果刚好在触发的正点上
 				if (triggerResult.isFire()) {
 //					从map中拿到整个窗口的数据contents
 					ACC contents = windowState.get();
@@ -431,6 +434,7 @@ public class WindowOperator<K, IN, ACC, OUT, W extends Window>
 		}
 	}
 
+//	触发器才是是否触发窗口计算的条件，每次来数据都会先遍历定时器，看有没有超过定时器的时间便触发窗口计算
 	@Override
 	public void onEventTime(InternalTimer<K, W> timer) throws Exception {
 		triggerContext.key = timer.getKey();
@@ -456,8 +460,33 @@ public class WindowOperator<K, IN, ACC, OUT, W extends Window>
 
 		TriggerResult triggerResult = triggerContext.onEventTime(timer.getTimestamp());
 
+//		定时器是否触发窗口计算
 		if (triggerResult.isFire()) {
 			ACC contents = windowState.get();
+
+//					当为时间窗口时，为了获取开始结束时间--------
+//			Window window = triggerContext.window;
+//			if (triggerContext.window instanceof TimeWindow){
+//				long start = ((TimeWindow) window).getStart();
+//				long end = ((TimeWindow) window).getEnd();
+//				StreamRecord[] sortedContents = new StreamRecord[(int) (end - start)];
+//				Iterator<StreamRecord<IN>> sourceIterator = ((ArrayList)contents).iterator();
+//				int num = 0;
+//				while (sourceIterator.hasNext()){
+//					StreamRecord<IN> record = sourceIterator.next();
+//					sortedContents[(int) (record.getTimestamp()-start)] = record;
+//					num++;
+//				}
+//				ArrayList<StreamRecord<IN>> sortedRecords = new ArrayList<StreamRecord<IN>>(num);
+//				for (int i = 0 ;i < sortedContents.length;i++){
+//					if (sortedContents[i] != null){
+//						sortedRecords.add(sortedContents[i]);
+//					}
+//				}
+//				contents =  (ACC) (sortedRecords.iterator());
+//			}
+//			-----------------------------------------------------------
+
 			if (contents != null) {
 				emitWindowContents(triggerContext.window, contents);
 			}

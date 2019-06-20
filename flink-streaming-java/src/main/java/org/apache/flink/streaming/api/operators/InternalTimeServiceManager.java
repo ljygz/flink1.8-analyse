@@ -125,6 +125,7 @@ public class InternalTimeServiceManager<K> {
 
 	public void advanceWatermark(Watermark watermark) throws Exception {
 		for (InternalTimerServiceImpl<?, ?> service : timerServices.values()) {
+//			包含循环所有并执行定时器任务
 			service.advanceWatermark(watermark.getTimestamp());
 		}
 	}

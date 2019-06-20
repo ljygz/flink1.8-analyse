@@ -33,6 +33,7 @@ import org.apache.flink.streaming.api.windowing.assigners.WindowAssigner;
 import org.apache.flink.streaming.api.windowing.evictors.Evictor;
 import org.apache.flink.streaming.api.windowing.triggers.Trigger;
 import org.apache.flink.streaming.api.windowing.triggers.TriggerResult;
+import org.apache.flink.streaming.api.windowing.windows.TimeWindow;
 import org.apache.flink.streaming.api.windowing.windows.Window;
 import org.apache.flink.streaming.runtime.operators.windowing.functions.InternalWindowFunction;
 import org.apache.flink.streaming.runtime.streamrecord.StreamRecord;
@@ -42,7 +43,9 @@ import org.apache.flink.shaded.guava18.com.google.common.base.Function;
 import org.apache.flink.shaded.guava18.com.google.common.collect.FluentIterable;
 import org.apache.flink.shaded.guava18.com.google.common.collect.Iterables;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Iterator;
 
 import static org.apache.flink.util.Preconditions.checkNotNull;
 
@@ -211,10 +214,12 @@ public class EvictingWindowOperator<K, IN, OUT, W extends Window>
 
 				if (triggerResult.isFire()) {
 					Iterable<StreamRecord<IN>> contents = evictingWindowState.get();
+
 					if (contents == null) {
 						// if we have no state, there is nothing to do
 						continue;
 					}
+
 					emitWindowContents(window, contents, evictingWindowState);
 				}
 

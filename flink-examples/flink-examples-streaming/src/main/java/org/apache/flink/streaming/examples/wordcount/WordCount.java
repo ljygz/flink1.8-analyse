@@ -61,6 +61,7 @@ public class WordCount {
 
 		// get input data
 		DataStream<String> text;
+
 		if (params.has("input")) {
 			// read the text file from given input path
 			text = env.readTextFile(params.get("input"));
