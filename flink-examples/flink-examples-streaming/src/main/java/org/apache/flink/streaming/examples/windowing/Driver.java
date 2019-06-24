@@ -20,7 +20,7 @@ public class Driver {
 		StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
         DataStreamSource<Tuple3<String, Long, String>> sourceDateStream = env.fromElements(
              new Tuple3<String, Long, String>("a",1000000000000L,"21")
-			,new Tuple3<String, Long, String>("a",1000000000300L,"22")
+			,new Tuple3<String, Long, String>("a",1000000000300L,"23")
 			,new Tuple3<String, Long, String>("a",1000000000200L,"22")
             ,new Tuple3<String, Long, String>("a",1000000001000L,"22")
             ,new Tuple3<String, Long, String>("a",1000000002000L,"23")

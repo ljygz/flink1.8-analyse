@@ -233,6 +233,7 @@ public class CepOperator<IN, KEY, OUT>
 
 	@Override
 	public void processElement(StreamRecord<IN> element) throws Exception {
+//		系统时间不用排序
 		if (isProcessingTime) {
 			if (comparator == null) {
 				// there can be no out of order elements in processing time
@@ -301,6 +302,7 @@ public class CepOperator<IN, KEY, OUT>
 		elementQueueState.put(currentTime, elementsForTimestamp);
 	}
 
+//	当cep定时器触发计算
 	@Override
 	public void onEventTime(InternalTimer<KEY, VoidNamespace> timer) throws Exception {
 

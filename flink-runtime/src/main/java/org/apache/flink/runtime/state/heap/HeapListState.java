@@ -98,6 +98,7 @@ class HeapListState<K, N, V>
 			list = new ArrayList<>();
 			map.put(namespace, list);
 		}
+//		获取元素后添加到list中
 		list.add(value);
 	}
 

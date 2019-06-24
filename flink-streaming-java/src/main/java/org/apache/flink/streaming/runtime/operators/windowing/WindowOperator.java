@@ -74,7 +74,9 @@ import org.apache.flink.util.OutputTag;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Iterator;
+import java.util.stream.Stream;
 
 import static org.apache.flink.util.Preconditions.checkArgument;
 import static org.apache.flink.util.Preconditions.checkNotNull;
@@ -464,28 +466,10 @@ public class WindowOperator<K, IN, ACC, OUT, W extends Window>
 		if (triggerResult.isFire()) {
 			ACC contents = windowState.get();
 
-//					当为时间窗口时，为了获取开始结束时间--------
-//			Window window = triggerContext.window;
-//			if (triggerContext.window instanceof TimeWindow){
-//				long start = ((TimeWindow) window).getStart();
-//				long end = ((TimeWindow) window).getEnd();
-//				StreamRecord[] sortedContents = new StreamRecord[(int) (end - start)];
-//				Iterator<StreamRecord<IN>> sourceIterator = ((ArrayList)contents).iterator();
-//				int num = 0;
-//				while (sourceIterator.hasNext()){
-//					StreamRecord<IN> record = sourceIterator.next();
-//					sortedContents[(int) (record.getTimestamp()-start)] = record;
-//					num++;
-//				}
-//				ArrayList<StreamRecord<IN>> sortedRecords = new ArrayList<StreamRecord<IN>>(num);
-//				for (int i = 0 ;i < sortedContents.length;i++){
-//					if (sortedContents[i] != null){
-//						sortedRecords.add(sortedContents[i]);
-//					}
-//				}
-//				contents =  (ACC) (sortedRecords.iterator());
-//			}
-//			-----------------------------------------------------------
+//					自定义实现窗口排序失败 因为泛型不确定类型
+//			Collection collection = (Collection) contents;
+//			ArrayList arrayList = new ArrayList(((Collection) contents).size());
+//			collection.stream().forEachOrdered(x -> arrayList.add(x));
 
 			if (contents != null) {
 				emitWindowContents(triggerContext.window, contents);
