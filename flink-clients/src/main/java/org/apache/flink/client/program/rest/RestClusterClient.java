@@ -336,6 +336,7 @@ public class RestClusterClient<T> extends ClusterClient<T> implements NewCluster
 			}
 		}, executorService);
 
+//
 		CompletableFuture<Tuple2<JobSubmitRequestBody, Collection<FileUpload>>> requestFuture = jobGraphFileFuture.thenApply(jobGraphFile -> {
 			List<String> jarFileNames = new ArrayList<>(8);
 			List<JobSubmitRequestBody.DistributedCacheFile> artifactFileNames = new ArrayList<>(8);
@@ -352,7 +353,7 @@ public class RestClusterClient<T> extends ClusterClient<T> implements NewCluster
 				artifactFileNames.add(new JobSubmitRequestBody.DistributedCacheFile(artifacts.getKey(), new Path(artifacts.getValue().filePath).getName()));
 				filesToUpload.add(new FileUpload(Paths.get(artifacts.getValue().filePath), RestConstants.CONTENT_TYPE_BINARY));
 			}
-
+//	将jobgraph发送到远端jobmanager
 			final JobSubmitRequestBody requestBody = new JobSubmitRequestBody(
 				jobGraphFile.getFileName().toString(),
 				jarFileNames,
@@ -361,6 +362,7 @@ public class RestClusterClient<T> extends ClusterClient<T> implements NewCluster
 			return Tuple2.of(requestBody, Collections.unmodifiableCollection(filesToUpload));
 		});
 
+//		真正发送请求
 		final CompletableFuture<JobSubmitResponseBody> submissionFuture = requestFuture.thenCompose(
 			requestAndFileUploads -> sendRetriableRequest(
 				JobSubmitHeaders.getInstance(),

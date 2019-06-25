@@ -147,7 +147,8 @@ import static org.apache.flink.util.Preconditions.checkState;
  * given task</li>
  * </ul>
  */
-//jobmaster就是新的jobmanager
+//jobmaster 是主要起根据jobgraph生成streamGraph，以及向taskmanager发送tdd,启动checkpoint循环线程等逻辑
+//jobmaster包含在jobmanager里面当接收到jobgraph时，jobManager才会起jobmaster
 public class JobMaster extends FencedRpcEndpoint<JobMasterId> implements JobMasterGateway, JobMasterService {
 
 	/** Default names for Flink's distributed components. */
@@ -322,7 +323,7 @@ public class JobMaster extends FencedRpcEndpoint<JobMasterId> implements JobMast
 		// make sure we receive RPC and async calls
 		start();
 
-//		包含启动coordinator中周期线程
+//		包含启动coordinator中周期线程 以及生成executionGraph
 		return callAsyncWithoutFencing(() -> startJobExecution(newJobMasterId), RpcUtils.INF_TIMEOUT);
 	}
 
@@ -1044,6 +1045,7 @@ public class JobMaster extends FencedRpcEndpoint<JobMasterId> implements JobMast
 		log.info("Starting execution of job {} ({}) under job master id {}.", jobGraph.getName(), jobGraph.getJobID(), newJobMasterId);
 
 //		包含修改job状态 启动coordinator发送barrier线程
+//		以及生成executionGraph逻辑
 		resetAndScheduleExecutionGraph();
 
 		return Acknowledge.get();

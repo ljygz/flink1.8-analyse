@@ -264,6 +264,7 @@ public abstract class StreamTask<OUT, OP extends StreamOperator<OUT>>
 				timerService = new SystemProcessingTimeService(this, getCheckpointLock(), timerThreadFactory);
 			}
 
+//			创建chain 包含遍历所有的operator并为每个赋值output
 			operatorChain = new OperatorChain<>(this, recordWriters);
 			headOperator = operatorChain.getHeadOperator();
 
@@ -297,6 +298,7 @@ public abstract class StreamTask<OUT, OP extends StreamOperator<OUT>>
 
 			// let the task do its work
 			isRunning = true;
+//			运行
 			run();
 
 			// if this left the run() method cleanly despite the fact that this was canceled,

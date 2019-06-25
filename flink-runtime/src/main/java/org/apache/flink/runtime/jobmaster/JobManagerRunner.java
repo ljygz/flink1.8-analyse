@@ -324,7 +324,7 @@ public class JobManagerRunner implements LeaderContender, OnCompletionActions, A
 
 		final CompletableFuture<Acknowledge> startFuture;
 		try {
-//			包含coordinator启动线程的逻辑
+//			包含coordinator启动线程的逻辑,以及生成executionGraph
 			startFuture = jobMasterService.start(new JobMasterId(leaderSessionId));
 		} catch (Exception e) {
 			return FutureUtils.completedExceptionally(new FlinkException("Failed to start the JobMaster.", e));

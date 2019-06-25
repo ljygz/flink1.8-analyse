@@ -129,6 +129,7 @@ public class StreamGraphGenerator {
 	 */
 	private StreamGraph generateInternal(List<StreamTransformation<?>> transformations) {
 		for (StreamTransformation<?> transformation: transformations) {
+//			将用户的操作关联到StreamGraph上
 			transform(transformation);
 		}
 		return streamGraph;
@@ -159,6 +160,7 @@ public class StreamGraphGenerator {
 		}
 
 		// call at least once to trigger exceptions about MissingTypeInfo
+//		触发一次以保障没有缺失类型的异常
 		transform.getOutputType();
 
 		Collection<Integer> transformedIds;
@@ -537,7 +539,7 @@ public class StreamGraphGenerator {
 		}
 
 		String slotSharingGroup = determineSlotSharingGroup(transform.getSlotSharingGroup(), inputIds);
-
+//		向streamGraph添加用户操作(oneInputStreamOperator)
 		streamGraph.addOperator(transform.getId(),
 				slotSharingGroup,
 				transform.getCoLocationGroupKey(),

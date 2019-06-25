@@ -86,9 +86,10 @@ public class LocalStreamEnvironment extends StreamExecutionEnvironment {
 	@Override
 	public JobExecutionResult execute(String jobName) throws Exception {
 		// transform the streaming program into a JobGraph
+//		创建streamGraph包含operator,edge,parallizer
 		StreamGraph streamGraph = getStreamGraph();
 		streamGraph.setJobName(jobName);
-
+//		driver 执行获取jobgraph 通过streamGraph
 		JobGraph jobGraph = streamGraph.getJobGraph();
 		jobGraph.setAllowQueuedScheduling(true);
 
@@ -119,7 +120,7 @@ public class LocalStreamEnvironment extends StreamExecutionEnvironment {
 		try {
 			miniCluster.start();
 			configuration.setInteger(RestOptions.PORT, miniCluster.getRestAddress().get().getPort());
-
+//			本地模式是本地jobManager即miniCluster,直接就在这里提交jobGraph了，而集群模式是将其提交到jobmanager对应的rpc接口上
 			return miniCluster.executeJobBlocking(jobGraph);
 		}
 		finally {

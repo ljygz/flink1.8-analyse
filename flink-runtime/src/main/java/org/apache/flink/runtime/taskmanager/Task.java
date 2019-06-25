@@ -708,6 +708,7 @@ public class Task implements Runnable, TaskActions, CheckpointListener {
 			executingThread.setContextClassLoader(userCodeClassLoader);
 
 			// run the invokable
+//			开始任务
 			invokable.invoke();
 
 			// make sure, we enter the catch block if the task leaves the invoke() method due
