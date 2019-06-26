@@ -296,7 +296,7 @@ public abstract class Dispatcher extends FencedRpcEndpoint<DispatcherId> impleme
 
 	private CompletableFuture<Acknowledge> internalSubmitJob(JobGraph jobGraph) {
 		log.info("Submitting job {} ({}).", jobGraph.getJobID(), jobGraph.getName());
-
+//		启动jobmaster
 		final CompletableFuture<Acknowledge> persistAndRunFuture = waitForTerminatingJobManager(jobGraph.getJobID(), jobGraph, this::persistAndRunJob)
 			.thenApply(ignored -> Acknowledge.get());
 
@@ -350,7 +350,7 @@ public abstract class Dispatcher extends FencedRpcEndpoint<DispatcherId> impleme
 
 		final CompletableFuture<JobManagerRunner> jobManagerRunnerFuture = CompletableFuture.supplyAsync(
 			CheckedSupplier.unchecked(() ->
-//				创建jobmanager
+//				创建jobmanager (将jobGraph转换成executionGraph 生成coordinator)  但并未启动
 				jobManagerRunnerFactory.createJobManagerRunner(
 					jobGraph,
 					configuration,
@@ -361,7 +361,7 @@ public abstract class Dispatcher extends FencedRpcEndpoint<DispatcherId> impleme
 					new DefaultJobManagerJobMetricGroupFactory(jobManagerMetricGroup),
 					fatalErrorHandler)),
 			rpcService.getExecutor());
-
+//		真正启动
 		return jobManagerRunnerFuture.thenApply(FunctionUtils.uncheckedFunction(this::startJobManagerRunner));
 	}
 

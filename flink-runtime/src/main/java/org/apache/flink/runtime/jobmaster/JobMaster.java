@@ -227,7 +227,7 @@ public class JobMaster extends FencedRpcEndpoint<JobMasterId> implements JobMast
 
 	// ------------------------------------------------------------------------
 
-//	包含创建coordinator逻辑
+//	包含创建coordinator逻辑 以及创建executionGraph
 	public JobMaster(
 			RpcService rpcService,
 			JobMasterConfiguration jobMasterConfiguration,
@@ -299,7 +299,7 @@ public class JobMaster extends FencedRpcEndpoint<JobMasterId> implements JobMast
 		this.lastInternalSavepoint = null;
 
 		this.jobManagerJobMetricGroup = jobMetricGroupFactory.create(jobGraph);
-//		同时创建coordinator
+//		同时创建coordinator 以及 通过已经获取的jobGraph创建executionGraph
 		this.executionGraph = createAndRestoreExecutionGraph(jobManagerJobMetricGroup);
 		this.jobStatusListener = null;
 
@@ -323,7 +323,7 @@ public class JobMaster extends FencedRpcEndpoint<JobMasterId> implements JobMast
 		// make sure we receive RPC and async calls
 		start();
 
-//		包含启动coordinator中周期线程 以及生成executionGraph
+//		包含启动coordinator中周期线程 启动executionGraph
 		return callAsyncWithoutFencing(() -> startJobExecution(newJobMasterId), RpcUtils.INF_TIMEOUT);
 	}
 
@@ -1045,7 +1045,7 @@ public class JobMaster extends FencedRpcEndpoint<JobMasterId> implements JobMast
 		log.info("Starting execution of job {} ({}) under job master id {}.", jobGraph.getName(), jobGraph.getJobID(), newJobMasterId);
 
 //		包含修改job状态 启动coordinator发送barrier线程
-//		以及生成executionGraph逻辑
+//		以及Schedule(不是生成)executionGraph逻辑
 		resetAndScheduleExecutionGraph();
 
 		return Acknowledge.get();
@@ -1149,7 +1149,7 @@ public class JobMaster extends FencedRpcEndpoint<JobMasterId> implements JobMast
 					return null;
 				});
 		}
-
+//		调度executionGraph
 		executionGraphAssignedFuture.thenRun(this::scheduleExecutionGraph);
 	}
 
@@ -1169,7 +1169,7 @@ public class JobMaster extends FencedRpcEndpoint<JobMasterId> implements JobMast
 	}
 
 	private ExecutionGraph createAndRestoreExecutionGraph(JobManagerJobMetricGroup currentJobManagerJobMetricGroup) throws Exception {
-
+//		创建executionGraph通过已经获取的jobGraph
 		ExecutionGraph newExecutionGraph = createExecutionGraph(currentJobManagerJobMetricGroup);
 
 		final CheckpointCoordinator checkpointCoordinator = newExecutionGraph.getCheckpointCoordinator();
@@ -1188,7 +1188,7 @@ public class JobMaster extends FencedRpcEndpoint<JobMasterId> implements JobMast
 
 		return newExecutionGraph;
 	}
-
+//	创建ExecutionGraph通过jobGraph
 	private ExecutionGraph createExecutionGraph(JobManagerJobMetricGroup currentJobManagerJobMetricGroup) throws JobExecutionException, JobException {
 //		包含创建coordinator的逻辑
 		return ExecutionGraphBuilder.buildGraph(

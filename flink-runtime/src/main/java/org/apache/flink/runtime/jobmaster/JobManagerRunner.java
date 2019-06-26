@@ -175,6 +175,7 @@ public class JobManagerRunner implements LeaderContender, OnCompletionActions, A
 
 	public void start() throws Exception {
 		try {
+//			启动选举，包含jobmanager启动，executionGraph.scheduleForExecution(),以及修改jobmanger状态让coordinator监听到开始运行
 			leaderElectionService.start(this);
 		} catch (Exception e) {
 			log.error("Could not start the JobManager because the leader election service did not start.", e);
@@ -276,7 +277,7 @@ public class JobManagerRunner implements LeaderContender, OnCompletionActions, A
 	//----------------------------------------------------------------------------------------------
 	// Leadership methods
 	//----------------------------------------------------------------------------------------------
-
+//	leaderElectionService.start()时调用
 	@Override
 	public void grantLeadership(final UUID leaderSessionID) {
 		synchronized (lock) {
@@ -304,6 +305,7 @@ public class JobManagerRunner implements LeaderContender, OnCompletionActions, A
 				if (jobSchedulingStatus == JobSchedulingStatus.DONE) {
 					return jobAlreadyDone();
 				} else {
+
 					return startJobMaster(leaderSessionId);
 				}
 			});
@@ -324,7 +326,7 @@ public class JobManagerRunner implements LeaderContender, OnCompletionActions, A
 
 		final CompletableFuture<Acknowledge> startFuture;
 		try {
-//			包含coordinator启动线程的逻辑,以及生成executionGraph
+//			包含coordinator启动线程的逻辑,以及启动(不是生成)executionGraph
 			startFuture = jobMasterService.start(new JobMasterId(leaderSessionId));
 		} catch (Exception e) {
 			return FutureUtils.completedExceptionally(new FlinkException("Failed to start the JobMaster.", e));

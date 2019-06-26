@@ -45,6 +45,7 @@ public class StandaloneLeaderElectionService implements LeaderElectionService {
 		contender = Preconditions.checkNotNull(newContender);
 
 		// directly grant leadership to the given contender
+//		包含jobmanager启动，executionGraph.scheduleForExecution(),以及修改jobmanger状态让coordinator监听到开始运行
 		contender.grantLeadership(HighAvailabilityServices.DEFAULT_LEADER_ID);
 	}
 

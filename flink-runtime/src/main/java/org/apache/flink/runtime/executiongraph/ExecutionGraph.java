@@ -902,6 +902,7 @@ public class ExecutionGraph implements AccessExecutionGraph {
 					break;
 
 				case EAGER:
+//					包含生成TDD发送到TaskManager的逻辑
 					newSchedulingFuture = scheduleEager(slotProvider, allocationTimeout);
 					break;
 
@@ -992,6 +993,7 @@ public class ExecutionGraph implements AccessExecutionGraph {
 			(Collection<Execution> executionsToDeploy) -> {
 				for (Execution execution : executionsToDeploy) {
 					try {
+//						将每个ExecutionVertex生成tdd发送到TaskManager
 						execution.deploy();
 					} catch (Throwable t) {
 						throw new CompletionException(
