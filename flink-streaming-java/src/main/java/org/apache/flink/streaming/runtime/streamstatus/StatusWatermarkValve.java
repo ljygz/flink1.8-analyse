@@ -107,7 +107,7 @@ public class StatusWatermarkValve {
 					channelStatuses[channelIndex].isWatermarkAligned = true;
 				}
 
-				// now, attempt to find a new min watermark across all aligned channels
+				// now, attempt to find a new min watermark across all aligned channels 并循环定时器看有没有可以触发的
 				findAndOutputNewMinWatermarkAcrossAlignedChannels();
 			}
 		}
@@ -186,6 +186,7 @@ public class StatusWatermarkValve {
 		// from some remaining aligned channel, and is also larger than the last output watermark
 		if (hasAlignedChannels && newMinWatermark > lastOutputWatermark) {
 			lastOutputWatermark = newMinWatermark;
+//			定时器是否触发判断
 			outputHandler.handleWatermark(new Watermark(lastOutputWatermark));
 		}
 	}

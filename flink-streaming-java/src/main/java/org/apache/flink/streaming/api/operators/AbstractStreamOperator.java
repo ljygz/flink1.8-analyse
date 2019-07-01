@@ -775,6 +775,7 @@ public abstract class AbstractStreamOperator<OUT>
 		return keyedTimeServiceHandler.getInternalTimerService(name, timerSerializer, triggerable);
 	}
 
+//	接收到水印判断是否有定时器满足触发
 	public void processWatermark(Watermark mark) throws Exception {
 		if (timeServiceManager != null) {
 //			包含定时器触发逻辑

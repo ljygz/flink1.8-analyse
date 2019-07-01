@@ -32,6 +32,7 @@ import org.apache.flink.streaming.runtime.streamrecord.StreamRecord;
  * @param <IN2> The input type of the operator
  * @param <OUT> The output type of the operator
  */
+//这种事针对两个输入的 像什么CoStreamMap,CoStreamFlatMap这种分别对两个操作
 @PublicEvolving
 public interface TwoInputStreamOperator<IN1, IN2, OUT> extends StreamOperator<OUT> {
 

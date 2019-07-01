@@ -269,6 +269,7 @@ public abstract class StreamTask<OUT, OP extends StreamOperator<OUT>>
 			headOperator = operatorChain.getHeadOperator();
 
 			// task specific initialization
+//			将head，inputGate 与inputProcessor关联
 			init();
 
 			// save the work of reloading state, etc, if the task is already canceled

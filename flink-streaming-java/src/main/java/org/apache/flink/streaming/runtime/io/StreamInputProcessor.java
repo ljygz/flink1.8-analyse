@@ -179,8 +179,9 @@ public class StreamInputProcessor<IN> {
 				if (result.isFullRecord()) {
 					StreamElement recordOrMark = deserializationDelegate.getInstance();
 
+//					这里面会包含一个，这个水印是否触发定时器，包含所有定时器遍历的逻辑
 					if (recordOrMark.isWatermark()) {
-						// handle watermark
+						// handle watermark 定时器遍历的逻辑
 						statusWatermarkValve.inputWatermark(recordOrMark.asWatermark(), currentChannel);
 						continue;
 					} else if (recordOrMark.isStreamStatus()) {
@@ -263,6 +264,7 @@ public class StreamInputProcessor<IN> {
 			try {
 				synchronized (lock) {
 					watermarkGauge.setCurrentWatermark(watermark.getTimestamp());
+//					定时器触发判断
 					operator.processWatermark(watermark);
 				}
 			} catch (Exception e) {

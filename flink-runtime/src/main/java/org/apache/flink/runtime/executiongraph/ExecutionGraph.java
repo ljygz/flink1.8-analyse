@@ -884,6 +884,7 @@ public class ExecutionGraph implements AccessExecutionGraph {
 		failoverStrategy.notifyNewVertices(newExecJobVertices);
 	}
 
+//	将executionGraph启动提交的逻辑
 	public void scheduleForExecution() throws JobException {
 
 		assertRunningInJobMasterMainThread();
@@ -897,10 +898,11 @@ public class ExecutionGraph implements AccessExecutionGraph {
 
 			switch (scheduleMode) {
 
+//				适合批处理——调度模式属于lazy的话就不会一下把tm全部齐起来，完成一个在起下一个
 				case LAZY_FROM_SOURCES:
 					newSchedulingFuture = scheduleLazy(slotProvider);
 					break;
-
+//				适合流处理——EAGER急切模式会将所有tm马上起起来无限流，tm是不会关闭的
 				case EAGER:
 //					包含生成TDD发送到TaskManager的逻辑
 					newSchedulingFuture = scheduleEager(slotProvider, allocationTimeout);

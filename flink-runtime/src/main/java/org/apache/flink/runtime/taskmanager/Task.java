@@ -363,6 +363,7 @@ public class Task implements Runnable, TaskActions, CheckpointListener {
 
 		int counter = 0;
 
+//		创建task的ResultPartition
 		for (ResultPartitionDeploymentDescriptor desc: resultPartitionDeploymentDescriptors) {
 			ResultPartitionID partitionId = new ResultPartitionID(desc.getPartitionId(), executionId);
 
@@ -387,8 +388,11 @@ public class Task implements Runnable, TaskActions, CheckpointListener {
 		this.inputGatesById = new HashMap<>();
 
 		counter = 0;
-
+//		创建Task的InputGate  这个地方遍历有多个难道是因为 task chain在一起多个？每个一个inputGate resultPartition?
 		for (InputGateDeploymentDescriptor inputGateDeploymentDescriptor: inputGateDeploymentDescriptors) {
+//			InputGate关联上游resultPartition信息生成的InputChannel
+//					1. 上游是本地
+//					2. 上游是remote
 			SingleInputGate gate = SingleInputGate.create(
 				taskNameWithSubtaskAndId,
 				jobId,
@@ -407,6 +411,7 @@ public class Task implements Runnable, TaskActions, CheckpointListener {
 		invokableHasBeenCanceled = new AtomicBoolean(false);
 
 		// finally, create the executing thread, but do not start it
+//		把自己赋给executingThread用于后面启动
 		executingThread = new Thread(TASK_THREADS_GROUP, this, taskNameWithSubtask);
 	}
 
@@ -611,6 +616,7 @@ public class Task implements Runnable, TaskActions, CheckpointListener {
 
 			LOG.info("Registering task at network: {}.", this);
 
+//			为inputGate与ResultPartition设置BufferPool
 			network.registerTask(this);
 
 			// add metrics for buffers

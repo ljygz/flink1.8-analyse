@@ -688,6 +688,7 @@ public class SingleInputGate implements InputGate {
 
 		for (int i = 0; i < inputChannels.length; i++) {
 			final ResultPartitionID partitionId = icdd[i].getConsumedPartitionId();
+//			根据partition位置分为本地,远程
 			final ResultPartitionLocation partitionLocation = icdd[i].getConsumedPartitionLocation();
 
 			if (partitionLocation.isLocal()) {
@@ -727,7 +728,7 @@ public class SingleInputGate implements InputGate {
 			else {
 				throw new IllegalStateException("Unexpected partition location.");
 			}
-
+//			关联前面创建的channel
 			inputGate.setInputChannel(partitionId.getPartitionId(), inputChannels[i]);
 		}
 

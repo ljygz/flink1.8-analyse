@@ -562,6 +562,7 @@ public class TaskExecutor extends RpcEndpoint implements TaskExecutorGateway {
 			}
 
 			if (taskAdded) {
+//				启动task线程
 				task.startTaskThread();
 
 				return CompletableFuture.completedFuture(Acknowledge.get());
