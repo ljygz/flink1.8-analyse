@@ -239,6 +239,8 @@ public class TaskManagerServices {
 		final MemoryManager memoryManager = createMemoryManager(taskManagerServicesConfiguration, freeHeapMemoryWithDefrag, maxJvmHeapMemory);
 
 		// start the I/O manager, it will create some temp directories.
+//		创建io管理类，为每个路径生成一个读守护线程，一个写守护线程，等待后面用iomanager创建读写请求然后加入queue
+//		像本地，模式getTmpDirPaths() ==  C:\Users\ADMINI~1\AppData\Local\Temp\
 		final IOManager ioManager = new IOManagerAsync(taskManagerServicesConfiguration.getTmpDirPaths());
 
 		final BroadcastVariableManager broadcastVariableManager = new BroadcastVariableManager();

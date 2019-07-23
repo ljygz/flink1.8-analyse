@@ -329,8 +329,9 @@ public class TaskManagerRunner implements FatalErrorHandler, AutoCloseableAsync 
 	}
 
 	public static void runTaskManager(Configuration configuration, ResourceID resourceId) throws Exception {
+//		初始化TaskManager 包括一些ioManager 等
 		final TaskManagerRunner taskManagerRunner = new TaskManagerRunner(configuration, resourceId);
-
+//		把TaskManager起起来
 		taskManagerRunner.start();
 	}
 
@@ -364,6 +365,7 @@ public class TaskManagerRunner implements FatalErrorHandler, AutoCloseableAsync 
 				remoteAddress,
 				localCommunicationOnly);
 
+//		包含初始化ioManager 起io线程等待拉取queue
 		TaskManagerServices taskManagerServices = TaskManagerServices.fromConfiguration(
 			taskManagerServicesConfiguration,
 			resourceID,

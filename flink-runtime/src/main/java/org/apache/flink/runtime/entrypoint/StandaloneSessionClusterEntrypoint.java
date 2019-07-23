@@ -38,7 +38,7 @@ public class StandaloneSessionClusterEntrypoint extends SessionClusterEntrypoint
 
 	@Override
 	protected DispatcherResourceManagerComponentFactory<?> createDispatcherResourceManagerComponentFactory(Configuration configuration) {
-//		---------------------------起rest服务包括接受jobgraph创建jobmanager并解析graph----------------------------
+//		-------------------------------------------------------
 		return new SessionDispatcherResourceManagerComponentFactory(StandaloneResourceManagerFactory.INSTANCE);
 	}
 

@@ -1228,6 +1228,7 @@ public class MutableHashTable<BT, PT> implements MemorySegmentSource {
 		}
 		
 		// spill the partition
+//		将分区写入磁盘
 		int numBuffersFreed = p.spillPartition(this.availableMemory, this.ioManager, 
 										this.currentEnumerator.next(), this.writeBehindBuffers);
 		this.writeBehindBuffersAvailable += numBuffersFreed;

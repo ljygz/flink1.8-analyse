@@ -352,6 +352,7 @@ public class IOManagerAsync extends IOManager implements UncaughtExceptionHandle
 				ReadRequest request = null;
 				while (alive && request == null) {
 					try {
+//						从读线程中queue拉取数据
 						request = this.requestQueue.take();
 					}
 					catch (InterruptedException e) {

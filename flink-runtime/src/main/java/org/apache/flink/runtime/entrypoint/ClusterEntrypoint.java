@@ -170,6 +170,7 @@ public abstract class ClusterEntrypoint implements AutoCloseableAsync, FatalErro
 			SecurityContext securityContext = installSecurityContext(configuration);
 
 			securityContext.runSecured((Callable<Void>) () -> {
+//				启动集群
 				runCluster(configuration);
 
 				return null;
@@ -529,6 +530,12 @@ public abstract class ClusterEntrypoint implements AutoCloseableAsync, FatalErro
 	// Helper methods
 	// --------------------------------------------------
 
+//	这个方法会被调用启动jobmanager
+//		yarn模式通过 YarnJobClusterEntrypoint
+//					YarnSessionClusterEntrypoint
+//		StandAlone模式通过
+//				   	StandaloneJobClusterEntryPoint
+//					StandaloneSessionClusterEntryPoint
 	public static void runClusterEntrypoint(ClusterEntrypoint clusterEntrypoint) {
 
 		final String clusterEntrypointName = clusterEntrypoint.getClass().getSimpleName();
