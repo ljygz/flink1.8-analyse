@@ -158,7 +158,7 @@ public class RecordWriter<T extends IOReadableWritable> {
 
 	private void emit(T record, int targetChannel) throws IOException, InterruptedException {
 		serializer.serializeRecord(record);
-
+//		包含输出端反压逻辑
 		if (copyFromSerializerToTargetChannel(targetChannel)) {
 			serializer.prune();
 		}
@@ -174,7 +174,9 @@ public class RecordWriter<T extends IOReadableWritable> {
 		serializer.reset();
 
 		boolean pruneTriggered = false;
+//		请求buffer
 		BufferBuilder bufferBuilder = getBufferBuilder(targetChannel);
+//		将序列化的数据写入buffer
 		SerializationResult result = serializer.copyToBufferBuilder(bufferBuilder);
 		while (result.isFullBuffer()) {
 			numBytesOut.inc(bufferBuilder.finish());
@@ -195,6 +197,7 @@ public class RecordWriter<T extends IOReadableWritable> {
 		checkState(!serializer.hasSerializedData(), "All data should be written at once");
 
 		if (flushAlways) {
+//			将序列化的数据写出去
 			targetPartition.flush(targetChannel);
 		}
 		return pruneTriggered;
@@ -260,7 +263,7 @@ public class RecordWriter<T extends IOReadableWritable> {
 
 	private BufferBuilder requestNewBufferBuilder(int targetChannel) throws IOException, InterruptedException {
 		checkState(!bufferBuilders[targetChannel].isPresent() || bufferBuilders[targetChannel].get().isFinished());
-
+//		向localbufferpPool请求memorySegment包装的buffer
 		BufferBuilder bufferBuilder = targetPartition.getBufferProvider().requestBufferBuilderBlocking();
 		bufferBuilders[targetChannel] = Optional.of(bufferBuilder);
 		targetPartition.addBufferConsumer(bufferBuilder.createBufferConsumer(), targetChannel);

@@ -181,7 +181,7 @@ public class StreamInputProcessor<IN> {
 
 //					这里面会包含一个，这个水印是否触发定时器，包含所有定时器遍历的逻辑
 					if (recordOrMark.isWatermark()) {
-						// handle watermark 定时器遍历的逻辑
+						// handle watermark  定时器遍历的逻辑
 						statusWatermarkValve.inputWatermark(recordOrMark.asWatermark(), currentChannel);
 						continue;
 					} else if (recordOrMark.isStreamStatus()) {
