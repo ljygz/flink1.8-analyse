@@ -1230,6 +1230,7 @@ public class CheckpointCoordinator {
 			}
 
 			if (jobStatusListener == null) {
+//				启动coordinator监听
 				jobStatusListener = new CheckpointCoordinatorDeActivator(this);
 			}
 

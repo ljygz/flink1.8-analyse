@@ -362,7 +362,7 @@ public abstract class Dispatcher extends FencedRpcEndpoint<DispatcherId> impleme
 					new DefaultJobManagerJobMetricGroupFactory(jobManagerMetricGroup),
 					fatalErrorHandler)),
 			rpcService.getExecutor());
-//		真正启动
+//		真正启动 以及修改状态让coordinator监听到状态改变开始运行
 		return jobManagerRunnerFuture.thenApply(FunctionUtils.uncheckedFunction(this::startJobManagerRunner));
 	}
 

@@ -183,6 +183,7 @@ class NettyClient {
 							serverSocketAddress.getPort());
 					channel.pipeline().addLast("ssl", sslHandler);
 				}
+//				包含反压逻辑(基于credit/无credit)
 				channel.pipeline().addLast(protocol.getClientChannelHandlers());
 			}
 		});

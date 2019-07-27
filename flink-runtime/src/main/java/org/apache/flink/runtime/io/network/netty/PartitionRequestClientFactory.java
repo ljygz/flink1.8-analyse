@@ -80,6 +80,7 @@ class PartitionRequestClientFactory {
 				Object old = clients.putIfAbsent(connectionId, connectingChannel);
 
 				if (old == null) {
+//					创建client连接，初始化nettyClient的addLast(protocol.getClientChannelHandlers()包含反压逻辑
 					nettyClient.connect(connectionId.getAddress()).addListener(connectingChannel);
 
 					client = connectingChannel.waitForChannel();

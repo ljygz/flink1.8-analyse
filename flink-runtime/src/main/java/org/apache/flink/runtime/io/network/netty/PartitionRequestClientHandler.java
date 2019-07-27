@@ -177,6 +177,7 @@ class PartitionRequestClientHandler extends ChannelInboundHandlerAdapter impleme
 	public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
 		try {
 			if (!bufferListener.hasStagedBufferOrEvent() && stagedMessages.isEmpty()) {
+//				拉取数据反序列化后，请求bufferPool实现接收端反压
 				decodeMsg(msg, false);
 			}
 			else {
@@ -248,7 +249,7 @@ class PartitionRequestClientHandler extends ChannelInboundHandlerAdapter impleme
 
 				return true;
 			}
-
+//			这个方法会请求memerySegment,形成反压
 			return decodeBufferOrEvent(inputChannel, bufferOrEvent, isStagedBuffer);
 		}
 		// ---- Error ---------------------------------------------------------
@@ -309,6 +310,7 @@ class PartitionRequestClientHandler extends ChannelInboundHandlerAdapter impleme
 				}
 
 				while (true) {
+//					从localBufferPool请求buffer(buffer由memorySegment封装而成)，请求不到柱塞
 					Buffer buffer = bufferProvider.requestBuffer();
 
 					if (buffer != null) {

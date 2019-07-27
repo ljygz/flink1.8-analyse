@@ -522,6 +522,7 @@ public class SingleInputGate implements InputGate {
 			throw new IllegalStateException("Released");
 		}
 
+//		为每个channel请求上游的subpartition
 		requestPartitions();
 
 		InputChannel currentChannel;

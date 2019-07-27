@@ -123,7 +123,9 @@ public class NettyProtocol {
 	 */
 	public ChannelHandler[] getClientChannelHandlers() {
 		NetworkClientHandler networkClientHandler =
+//			包含基于credit的netty反压感知
 			creditBasedEnabled ? new CreditBasedPartitionRequestClientHandler() :
+//			不包含基于credit的netty反压基于tcp以及接收端请求buffer反压感知
 				new PartitionRequestClientHandler();
 		return new ChannelHandler[] {
 			messageEncoder,

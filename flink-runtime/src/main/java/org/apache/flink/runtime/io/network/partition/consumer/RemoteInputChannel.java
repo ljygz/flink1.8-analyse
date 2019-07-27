@@ -162,7 +162,9 @@ public class RemoteInputChannel extends InputChannel implements BufferRecycler, 
 	public void requestSubpartition(int subpartitionIndex) throws IOException, InterruptedException {
 		if (partitionRequestClient == null) {
 			// Create a client and request the partition
+//			这个client是为了向上游拉数据
 			partitionRequestClient = connectionManager
+//				初始化client
 				.createPartitionRequestClient(connectionId);
 
 			partitionRequestClient.requestSubpartition(partitionId, subpartitionIndex, this, 0);

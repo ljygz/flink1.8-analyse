@@ -211,6 +211,8 @@ public class StreamInputProcessor<IN> {
 //			barrierHandler根据语义
 //					BarrierBuffer 会柱塞
 //					BarrierTracker
+
+//			以及包含接收端的反压逻辑
 			final BufferOrEvent bufferOrEvent = barrierHandler.getNextNonBlocked();
 			if (bufferOrEvent != null) {
 				if (bufferOrEvent.isBuffer()) {

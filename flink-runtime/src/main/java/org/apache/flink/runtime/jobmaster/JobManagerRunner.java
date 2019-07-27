@@ -305,7 +305,7 @@ public class JobManagerRunner implements LeaderContender, OnCompletionActions, A
 				if (jobSchedulingStatus == JobSchedulingStatus.DONE) {
 					return jobAlreadyDone();
 				} else {
-
+//					启动jobMaster
 					return startJobMaster(leaderSessionId);
 				}
 			});

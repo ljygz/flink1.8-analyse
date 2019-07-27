@@ -92,6 +92,7 @@ public class BarrierTracker implements CheckpointBarrierHandler {
 	@Override
 	public BufferOrEvent getNextNonBlocked() throws Exception {
 		while (true) {
+//			从inputGate获取数据
 			Optional<BufferOrEvent> next = inputGate.getNextBufferOrEvent();
 			if (!next.isPresent()) {
 				// buffer or input exhausted

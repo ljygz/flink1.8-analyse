@@ -101,7 +101,7 @@ public class OneInputStreamTask<IN, OUT> extends StreamTask<OUT, OneInputStreamO
 	protected void run() throws Exception {
 		// cache processor reference on the stack, to make the code more JIT friendly
 		final StreamInputProcessor<IN> inputProcessor = this.inputProcessor;
-
+//		这个循环会一直的拉数据
 		while (running && inputProcessor.processInput()) {
 			// all the work happens in the "processInput" method
 		}
