@@ -61,6 +61,7 @@ import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
+//分配和管理solt的，solt用于内存隔离
 /**
  * The slot manager is responsible for maintaining a view on all registered task manager slots,
  * their allocation and all pending slot requests. Whenever a new slot is registered or and
@@ -790,6 +791,7 @@ public class SlotManager implements AutoCloseable {
 		taskManagerRegistration.markUsed();
 
 		// RPC call to the task manager
+//		会调用taskmanager的requestSlot的rpc看下这个taskmanager下有没有solt
 		CompletableFuture<Acknowledge> requestFuture = gateway.requestSlot(
 			slotId,
 			pendingSlotRequest.getJobId(),

@@ -4,6 +4,7 @@ import org.apache.flink.api.java.functions.KeySelector;
 import org.apache.flink.api.java.tuple.Tuple;
 import org.apache.flink.api.java.tuple.Tuple3;
 import org.apache.flink.streaming.api.TimeCharacteristic;
+import org.apache.flink.streaming.api.datastream.AsyncDataStream;
 import org.apache.flink.streaming.api.datastream.DataStreamSource;
 import org.apache.flink.streaming.api.datastream.KeyedStream;
 import org.apache.flink.streaming.api.datastream.SingleOutputStreamOperator;
@@ -64,7 +65,8 @@ public class Driver {
 		   public Long getKey(Tuple3<String, Long, String> value) throws Exception {
 			   return value.f1;
 		   }
-	   }).window(TumblingEventTimeWindows.of(Time.seconds(3L)))
+	   })
+		 .window(TumblingEventTimeWindows.of(Time.seconds(3L)))
 		 .apply(new JoinFunction<Tuple3<String, Long, String>, Tuple3<String, Long, String>, Tuple3<String, Long, String>>() {
 			 @Override
 			 public Tuple3<String, Long, String> join(Tuple3<String, Long, String> first, Tuple3<String, Long, String> second) throws Exception {

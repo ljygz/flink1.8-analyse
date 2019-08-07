@@ -215,6 +215,7 @@ public abstract class ClusterEntrypoint implements AutoCloseableAsync, FatalErro
 
 	private void runCluster(Configuration configuration) throws Exception {
 		synchronized (lock) {
+//			创建一些服务，只初始化了没有启动ha，二进制，metric，心跳
 			initializeServices(configuration);
 
 			// write host information into configuration

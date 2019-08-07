@@ -58,7 +58,7 @@ public class StandaloneSessionClusterEntrypoint extends SessionClusterEntrypoint
 			commandLineParser.printHelp(StandaloneSessionClusterEntrypoint.class.getSimpleName());
 			System.exit(1);
 		}
-
+//		读取flink配置文件
 		Configuration configuration = loadConfiguration(entrypointClusterConfiguration);
 
 		StandaloneSessionClusterEntrypoint entrypoint = new StandaloneSessionClusterEntrypoint(configuration);

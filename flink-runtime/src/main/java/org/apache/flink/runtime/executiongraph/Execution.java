@@ -423,6 +423,7 @@ public class Execution implements AccessExecution, Archiveable<ArchivedExecution
 		final ExecutionGraph executionGraph = vertex.getExecutionGraph();
 		final Time allocationTimeout = executionGraph.getAllocationTimeout();
 		try {
+//			exection运行前先会向jobmanager的resourceManager的rpc请求slot
 			final CompletableFuture<Execution> allocationFuture = allocateAndAssignSlotForExecution(
 				slotProvider,
 				queued,
@@ -463,6 +464,7 @@ public class Execution implements AccessExecution, Archiveable<ArchivedExecution
 	}
 
 	/**
+	 * 请求slot
 	 * Allocates and assigns a slot obtained from the slot provider to the execution.
 	 *
 	 * @param slotProvider to obtain a new slot from

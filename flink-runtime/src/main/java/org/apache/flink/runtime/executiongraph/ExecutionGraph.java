@@ -1842,7 +1842,7 @@ public class ExecutionGraph implements AccessExecutionGraph {
 					if (checkpointCoordinator != null) {
 						checkpointCoordinator.failUnacknowledgedPendingCheckpointsFor(execution.getAttemptId(), ex);
 					}
-
+//				这里包含请求solt逻辑？
 					failoverStrategy.onTaskFailure(execution, ex);
 				}
 				catch (Throwable t) {

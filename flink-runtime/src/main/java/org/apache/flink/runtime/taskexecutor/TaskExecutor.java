@@ -130,7 +130,7 @@ import static org.apache.flink.util.Preconditions.checkArgument;
 import static org.apache.flink.util.Preconditions.checkNotNull;
 
 /**
- * 由taskManagerRunner创建
+ * 由taskManagerRunner创建 起来的rpc 包含接收tdd起线程运行 和 连接resourceManager请求solt的rpc
  * TaskExecutor implementation. The task executor is responsible for the execution of multiple
  * {@link Task}.
  */
@@ -697,6 +697,7 @@ public class TaskExecutor extends RpcEndpoint implements TaskExecutorGateway {
 	// Checkpointing RPCs
 	// ----------------------------------------------------------------------
 
+//	当来自jobmanager的coordinator触发一次cp,coordinator会调用task的这个方法
 	@Override
 	public CompletableFuture<Acknowledge> triggerCheckpoint(
 			ExecutionAttemptID executionAttemptID,

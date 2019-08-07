@@ -556,6 +556,7 @@ public abstract class StreamTask<OUT, OP extends StreamOperator<OUT>>
 	//  Checkpoint and Restore
 	// ------------------------------------------------------------------------
 
+//	会有来自jobmanager的coordinator周期性的访问task的这个方法
 	@Override
 	public boolean triggerCheckpoint(CheckpointMetaData checkpointMetaData, CheckpointOptions checkpointOptions) throws Exception {
 		try {
@@ -587,6 +588,7 @@ public abstract class StreamTask<OUT, OP extends StreamOperator<OUT>>
 			CheckpointMetrics checkpointMetrics) throws Exception {
 
 		try {
+//			performCheckpoint内部⾸先先将此次 checkpoint 的 barrier ⼴播到下游 并且包含快照状态
 			performCheckpoint(checkpointMetaData, checkpointOptions, checkpointMetrics);
 		}
 		catch (CancelTaskException e) {
@@ -613,6 +615,7 @@ public abstract class StreamTask<OUT, OP extends StreamOperator<OUT>>
 		}
 	}
 
+//	在task端一开始生成barriers往下游发广播barriers
 	private boolean performCheckpoint(
 			CheckpointMetaData checkpointMetaData,
 			CheckpointOptions checkpointOptions,
@@ -644,6 +647,8 @@ public abstract class StreamTask<OUT, OP extends StreamOperator<OUT>>
 
 				// Step (3): Take the state snapshot. This should be largely asynchronous, to not
 				//           impact progress of the streaming topology
+
+//				这个地方触发保存快照 每个operater的操作！！！！！！！！！！！到状态后端并且通知jobmanager
 				checkpointState(checkpointMetaData, checkpointOptions, checkpointMetrics);
 				return true;
 			}
@@ -716,6 +721,7 @@ public abstract class StreamTask<OUT, OP extends StreamOperator<OUT>>
 		}
 	}
 
+//	每个operator保存状态
 	private void checkpointState(
 			CheckpointMetaData checkpointMetaData,
 			CheckpointOptions checkpointOptions,
@@ -811,11 +817,12 @@ public abstract class StreamTask<OUT, OP extends StreamOperator<OUT>>
 	/**
 	 * This runnable executes the asynchronous parts of all involved backend snapshots for the subtask.
 	 */
+//	异步将状态写入状态后端线程
 	@VisibleForTesting
 	protected static final class AsyncCheckpointRunnable implements Runnable, Closeable {
 
 		private final StreamTask<?, ?> owner;
-
+//		包含所有operator的状态
 		private final Map<OperatorID, OperatorSnapshotFutures> operatorSnapshotsInProgress;
 
 		private final CheckpointMetaData checkpointMetaData;
@@ -1035,7 +1042,7 @@ public abstract class StreamTask<OUT, OP extends StreamOperator<OUT>>
 		private long startAsyncPartNano;
 
 		// ------------------------
-
+//		map中保存operator的状态
 		private final Map<OperatorID, OperatorSnapshotFutures> operatorSnapshotsInProgress;
 
 		public CheckpointingOperation(
@@ -1059,7 +1066,7 @@ public abstract class StreamTask<OUT, OP extends StreamOperator<OUT>>
 
 			try {
 				for (StreamOperator<?> op : allOperators) {
-//					遍历保存task中所有operater的状态
+//					遍历保存task中所有operater的状态到map中
 					checkpointStreamOperator(op);
 				}
 
@@ -1073,6 +1080,7 @@ public abstract class StreamTask<OUT, OP extends StreamOperator<OUT>>
 				checkpointMetrics.setSyncDurationMillis((startAsyncPartNano - startSyncPartNano) / 1_000_000);
 
 				// we are transferring ownership over snapshotInProgressList for cleanup to the thread, active on submit
+//				异步线程用于保存状态
 				AsyncCheckpointRunnable asyncCheckpointRunnable = new AsyncCheckpointRunnable(
 					owner,
 					operatorSnapshotsInProgress,

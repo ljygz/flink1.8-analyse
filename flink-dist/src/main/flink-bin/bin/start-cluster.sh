@@ -49,5 +49,5 @@ else
 fi
 shopt -u nocasematch
 
-# Start TaskManager instance(s)
+# Start TaskManager instance(s)这里会走config.sh的TMSlaves方法到taskmanager.sh
 TMSlaves start

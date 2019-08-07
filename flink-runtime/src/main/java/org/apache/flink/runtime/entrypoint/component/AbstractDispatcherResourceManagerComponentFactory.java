@@ -167,6 +167,7 @@ public abstract class AbstractDispatcherResourceManagerComponentFactory<T extend
 				hostname,
 				ConfigurationUtils.getSystemResourceMetricsProbingInterval(configuration));
 
+//			这个地方是会创建resourceManager的用于接收请求solt的请求
 			resourceManager = resourceManagerFactory.createResourceManager(
 				configuration,
 				ResourceID.generate(),
@@ -196,6 +197,7 @@ public abstract class AbstractDispatcherResourceManagerComponentFactory<T extend
 				historyServerArchivist);
 
 			log.debug("Starting ResourceManager.");
+//			启动了resourceManager,
 			resourceManager.start();
 			resourceManagerRetrievalService.start(resourceManagerGatewayRetriever);
 

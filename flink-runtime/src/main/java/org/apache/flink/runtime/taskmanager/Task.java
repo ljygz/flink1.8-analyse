@@ -1174,6 +1174,7 @@ public class Task implements Runnable, TaskActions, CheckpointListener {
 					FileSystemSafetyNet.setSafetyNetCloseableRegistryForThread(safetyNetCloseableRegistry);
 
 					try {
+//						调用invokable的方法
 						boolean success = invokable.triggerCheckpoint(checkpointMetaData, checkpointOptions);
 						if (!success) {
 							checkpointResponder.declineCheckpoint(

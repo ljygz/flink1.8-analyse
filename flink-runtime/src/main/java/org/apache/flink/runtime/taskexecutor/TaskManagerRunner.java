@@ -299,6 +299,7 @@ public class TaskManagerRunner implements FatalErrorHandler, AutoCloseableAsync 
 			SecurityUtils.getInstalledContext().runSecured(new Callable<Void>() {
 				@Override
 				public Void call() throws Exception {
+//					启动taskmanager
 					runTaskManager(configuration, ResourceID.generate());
 					return null;
 				}
@@ -339,7 +340,7 @@ public class TaskManagerRunner implements FatalErrorHandler, AutoCloseableAsync 
 	//  Static utilities
 	// --------------------------------------------------------------------------------------------
 
-	public static TaskExecutor startTaskManager(
+		public static TaskExecutor startTaskManager(
 			Configuration configuration,
 			ResourceID resourceID,
 			RpcService rpcService,
@@ -382,7 +383,7 @@ public class TaskManagerRunner implements FatalErrorHandler, AutoCloseableAsync 
 		TaskManagerConfiguration taskManagerConfiguration = TaskManagerConfiguration.fromConfiguration(configuration);
 
 		String metricQueryServicePath = metricRegistry.getMetricQueryServicePath();
-
+//		包含rpc接口
 		return new TaskExecutor(
 			rpcService,
 			taskManagerConfiguration,

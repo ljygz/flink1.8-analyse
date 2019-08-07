@@ -136,6 +136,7 @@ public abstract class ResourceManager<WorkerType extends ResourceIDRetrievable>
 	private final FatalErrorHandler fatalErrorHandler;
 
 	/** The slot manager maintains the available slots. */
+//	用于分配slot
 	private final SlotManager slotManager;
 
 	private final ClusterInformation clusterInformation;

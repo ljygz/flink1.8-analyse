@@ -42,6 +42,7 @@ public interface DispatcherGateway extends FencedRpcGateway<DispatcherId>, Restf
 	 * @param jobGraph JobGraph to submit
 	 * @param timeout RPC timeout
 	 * @return A future acknowledge if the submission succeeded
+	 * rpc用于接收jobgraph
 	 */
 	CompletableFuture<Acknowledge> submitJob(
 		JobGraph jobGraph,
