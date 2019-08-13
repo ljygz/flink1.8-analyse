@@ -175,6 +175,7 @@ public class StatusWatermarkValve {
 		boolean hasAlignedChannels = false;
 
 		// determine new overall watermark by considering only watermark-aligned channels across all channels
+//		这里输出新的水印会从所有上游输入的watermark中选最小的
 		for (InputChannelStatus channelStatus : channelStatuses) {
 			if (channelStatus.isWatermarkAligned) {
 				hasAlignedChannels = true;

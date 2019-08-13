@@ -258,17 +258,18 @@ public class CepOperator<IN, KEY, OUT>
 			// In event-time processing we assume correctness of the watermark.
 			// Events with timestamp smaller than or equal with the last seen watermark are considered late.
 			// Late events are put in a dedicated side output, if the user has specified one.
-
+//			当数据没有被视为迟到时
 			if (timestamp > lastWatermark) {
 
 				// we have an event with a valid timestamp, so
 				// we buffer it until we receive the proper watermark.
-
+//				只要不是迟到的数据，它就会把它的时间的下一秒作为定时器？然后来下一条数据就触发计算？cep?
 				saveRegisterWatermarkTimer();
-
+//				把元素放到statemap中？时间戳作为他的key,原因是后面会把所有的数据的key即事件时间取出来，时间放到一个优先队列
 				bufferEvent(value, timestamp);
 
 			} else if (lateDataOutputTag != null) {
+//				侧输出
 				output.collect(lateDataOutputTag, element);
 			}
 		}
@@ -306,15 +307,18 @@ public class CepOperator<IN, KEY, OUT>
 	@Override
 	public void onEventTime(InternalTimer<KEY, VoidNamespace> timer) throws Exception {
 
+//		获取对应key的数据集合，以及NFA
 		// 1) get the queue of pending elements for the key and the corresponding NFA,
 		// 2) process the pending elements in event time order and custom comparator if exists
 		//		by feeding them in the NFA
+//		处理时间没有这一步
 		// 3) advance the time to the current watermark, so that expired patterns are discarded.
 		// 4) update the stored state for the key, by only storing the new NFA and MapState iff they
 		//		have state to be used later.
+//		处理时间没有这一步
 		// 5) update the last seen watermark.
 
-		// STEP 1
+		// STEP 1		得到了所有数据事件时间的优先队列（按事件时间排序）
 		PriorityQueue<Long> sortedTimestamps = getSortedTimestamps();
 		NFAState nfaState = getNFAState();
 
@@ -326,6 +330,7 @@ public class CepOperator<IN, KEY, OUT>
 				elements.forEachOrdered(
 					event -> {
 						try {
+//							将数据排好序（事件时间）以后使用NFA真正的处理逻辑
 							processEvent(nfaState, event, timestamp);
 						} catch (Exception e) {
 							throw new RuntimeException(e);
