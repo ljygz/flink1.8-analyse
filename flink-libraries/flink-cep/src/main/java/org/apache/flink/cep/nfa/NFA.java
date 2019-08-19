@@ -224,7 +224,9 @@ public class NFA<T> {
 			final long timestamp,
 			final AfterMatchSkipStrategy afterMatchSkipStrategy,
 			final TimerService timerService) throws Exception {
+
 		try (EventWrapper eventWrapper = new EventWrapper(event, timestamp, sharedBufferAccessor)) {
+//			返回处理结束(即已经完成整个正则匹配的数据)的元素集合或者超时的集合，匹配失败的会release,匹配成功但还未到结尾的继续丢到状态里面去
 			return doProcess(sharedBufferAccessor, nfaState, eventWrapper, afterMatchSkipStrategy, timerService);
 		}
 	}
@@ -284,11 +286,13 @@ public class NFA<T> {
 			final AfterMatchSkipStrategy afterMatchSkipStrategy,
 			final TimerService timerService) throws Exception {
 
+//		传入一个比较器，通过比较时间，时间相同的比较stateid
 		final PriorityQueue<ComputationState> newPartialMatches = new PriorityQueue<>(NFAState.COMPUTATION_STATE_COMPARATOR);
 		final PriorityQueue<ComputationState> potentialMatches = new PriorityQueue<>(NFAState.COMPUTATION_STATE_COMPARATOR);
 
-		// iterate over all current computations
+		// iterate over all current computations 先获取局部匹配的所有状态机用于遍历，看当前元素是否可以可以继续匹配未匹配完成的所有状态机
 		for (ComputationState computationState : nfaState.getPartialMatches()) {
+
 			final Collection<ComputationState> newComputationStates = computeNextStates(
 				sharedBufferAccessor,
 				computationState,
@@ -306,13 +310,16 @@ public class NFA<T> {
 			//if stop state reached in this path
 			boolean shouldDiscardPath = false;
 			for (final ComputationState newComputationState : newComputationStates) {
-
+//				完成匹配
 				if (isFinalState(newComputationState)) {
 					potentialMatches.add(newComputationState);
+//				未匹配上	停止
 				} else if (isStopState(newComputationState)) {
 					//reached stop state. release entry for the stop state
+//					修改是否需要释放，用于下面判断
 					shouldDiscardPath = true;
 					sharedBufferAccessor.releaseNode(newComputationState.getPreviousBufferEntry());
+//				未匹配完成，需要继续匹配
 				} else {
 					// add new computation state; it will be processed once the next event arrives
 					statesToRetain.add(newComputationState);

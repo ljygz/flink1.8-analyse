@@ -269,7 +269,7 @@ public class CepOperator<IN, KEY, OUT>
 				bufferEvent(value, timestamp);
 
 			} else if (lateDataOutputTag != null) {
-//				侧输出
+//				侧输出迟到的数据
 				output.collect(lateDataOutputTag, element);
 			}
 		}
@@ -426,7 +426,7 @@ public class CepOperator<IN, KEY, OUT>
 	 * @param event The current event to be processed
 	 * @param timestamp The timestamp of the event
 	 */
-	private void processEvent(NFAState nfaState, IN event, long timestamp) throws Exception {
+	private void processEvent(NFAState nfaState, IN event, long timestamp)		 throws Exception {
 		try (SharedBufferAccessor<IN> sharedBufferAccessor = partialMatches.getAccessor()) {
 			Collection<Map<String, List<IN>>> patterns =
 				nfa.process(sharedBufferAccessor, nfaState, event, timestamp, afterMatchSkipStrategy, cepTimerService);

@@ -26,10 +26,7 @@ public class Driver {
 		StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
 		env.setStreamTimeCharacteristic(TimeCharacteristic.EventTime);
         DataStreamSource<Tuple3<String, Long, String>> sourceDateStream = env.fromElements(
-             new Tuple3<String, Long, String>("a",1000000000000L,"21")
-			,new Tuple3<String, Long, String>("a",1000000000300L,"23")
-			,new Tuple3<String, Long, String>("a",1000000000200L,"22")
-            ,new Tuple3<String, Long, String>("a",1000000001000L,"22")
+            new Tuple3<String, Long, String>("a",1000000001000L,"22")
             ,new Tuple3<String, Long, String>("a",1000000002000L,"23")
             ,new Tuple3<String, Long, String>("a",1000000003000L,"23")
             ,new Tuple3<String, Long, String>("a",1000000004000L,"24")
@@ -42,7 +39,6 @@ public class Driver {
 
 				@Nullable
 				public Watermark checkAndGetNextWatermark(Tuple3<String, Long, String> stringLongStringTuple3, long l) {
-					System.out.println("已经生成水印了");
 					return new Watermark(maxTimsStamp - 1000);
 				}
 
@@ -60,13 +56,14 @@ public class Driver {
 		   public Long getKey(Tuple3<String, Long, String> value) throws Exception {
 			   return value.f1;
 		   }
-	   }).equalTo(new KeySelector<Tuple3<String, Long, String>, Long>() {
+	    }).equalTo(new KeySelector<Tuple3<String, Long, String>, Long>() {
 		   @Override
 		   public Long getKey(Tuple3<String, Long, String> value) throws Exception {
 			   return value.f1;
 		   }
-	   })
+	    })
 		 .window(TumblingEventTimeWindows.of(Time.seconds(3L)))
+		 .allowedLateness(Time.seconds(10))
 		 .apply(new JoinFunction<Tuple3<String, Long, String>, Tuple3<String, Long, String>, Tuple3<String, Long, String>>() {
 			 @Override
 			 public Tuple3<String, Long, String> join(Tuple3<String, Long, String> first, Tuple3<String, Long, String> second) throws Exception {
@@ -74,8 +71,6 @@ public class Driver {
 				 return first;
 			 }
 		 }).print();
-
-
 //        异步io防抖动
 //        AsyncDataStream.unorderedWait()
 

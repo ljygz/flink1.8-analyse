@@ -27,6 +27,7 @@ import java.util.Queue;
 /**
  * State kept for a {@link NFA}.
  */
+//用于保存状态（ComputationState）的的状态机
 public class NFAState {
 
 	/**
@@ -34,8 +35,9 @@ public class NFAState {
 	 * These are the "active" intermediate states that are waiting for new matching
 	 * events to transition to new valid states.
 	 */
+//	用于保存还未完成的局部匹配的优先队列
 	private Queue<ComputationState> partialMatches;
-
+//	用于保存已完成的匹配优先队列
 	private Queue<ComputationState> completedMatches;
 
 	/**
