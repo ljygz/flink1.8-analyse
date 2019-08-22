@@ -412,7 +412,7 @@ public class WindowOperator<K, IN, ACC, OUT, W extends Window>
 					if (contents == null) {
 						continue;
 					}
-//					窗口执行用户process(),contents是个iterator
+//
 					emitWindowContents(window, contents);
 				}
 
@@ -465,12 +465,6 @@ public class WindowOperator<K, IN, ACC, OUT, W extends Window>
 //		定时器是否触发窗口计算
 		if (triggerResult.isFire()) {
 			ACC contents = windowState.get();
-
-//					自定义实现窗口排序失败 因为泛型不确定类型
-//			Collection collection = (Collection) contents;
-//			ArrayList arrayList = new ArrayList(((Collection) contents).size());
-//			collection.stream().forEachOrdered(x -> arrayList.add(x));
-
 			if (contents != null) {
 				emitWindowContents(triggerContext.window, contents);
 			}

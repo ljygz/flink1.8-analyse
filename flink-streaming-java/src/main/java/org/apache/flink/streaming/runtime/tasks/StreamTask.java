@@ -289,6 +289,7 @@ public abstract class StreamTask<OUT, OP extends StreamOperator<OUT>>
 				// registers a timer, that fires before the open() is called.
 
 				initializeState();
+//				这个方法还会调用所有operator的open方法
 				openAllOperators();
 			}
 
