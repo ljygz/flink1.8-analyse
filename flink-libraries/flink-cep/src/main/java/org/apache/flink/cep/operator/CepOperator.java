@@ -97,6 +97,8 @@ public class CepOperator<IN, KEY, OUT>
 	private final NFACompiler.NFAFactory<IN> nfaFactory;
 
 	private transient ValueState<NFAState> computationStates;
+
+//	key 时间戳 value 这个时间戳的所有数据
 	private transient MapState<Long, List<IN>> elementQueueState;
 	private transient SharedBuffer<IN> partialMatches;
 
@@ -263,9 +265,10 @@ public class CepOperator<IN, KEY, OUT>
 
 				// we have an event with a valid timestamp, so
 				// we buffer it until we receive the proper watermark.
-//				只要不是迟到的数据，它就会把它的时间的下一秒作为定时器？然后来下一条数据就触发计算？cep?
+//				只要不是迟到的数据，它就会把当前的水印时间的下一秒作为定时器？然后来下一条数据就触发计算？cep?
 				saveRegisterWatermarkTimer();
 //				把元素放到statemap中？时间戳作为他的key,原因是后面会把所有的数据的key即事件时间取出来，时间放到一个优先队列
+//				因为事件时间会把数据先buffer起来到这个map 里面
 				bufferEvent(value, timestamp);
 
 			} else if (lateDataOutputTag != null) {
@@ -322,7 +325,7 @@ public class CepOperator<IN, KEY, OUT>
 		PriorityQueue<Long> sortedTimestamps = getSortedTimestamps();
 		NFAState nfaState = getNFAState();
 
-		// STEP 2
+		// STEP 2  只有数据按事件时间的优先队列里面的第一个元素事件时间小于当前水印就触发
 		while (!sortedTimestamps.isEmpty() && sortedTimestamps.peek() <= timerService.currentWatermark()) {
 			long timestamp = sortedTimestamps.poll();
 			advanceTime(nfaState, timestamp);
@@ -426,7 +429,7 @@ public class CepOperator<IN, KEY, OUT>
 	 * @param event The current event to be processed
 	 * @param timestamp The timestamp of the event
 	 */
-	private void processEvent(NFAState nfaState, IN event, long timestamp)		 throws Exception {
+	private void processEvent(NFAState nfaState, IN event, long timestamp)throws Exception {
 		try (SharedBufferAccessor<IN> sharedBufferAccessor = partialMatches.getAccessor()) {
 			Collection<Map<String, List<IN>>> patterns =
 				nfa.process(sharedBufferAccessor, nfaState, event, timestamp, afterMatchSkipStrategy, cepTimerService);

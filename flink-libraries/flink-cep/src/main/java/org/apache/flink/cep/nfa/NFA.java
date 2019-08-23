@@ -287,12 +287,17 @@ public class NFA<T> {
 			final TimerService timerService) throws Exception {
 
 //		传入一个比较器，通过比较时间，时间相同的比较stateid
+
+//		用于装这个元素后依然未匹配完成的
 		final PriorityQueue<ComputationState> newPartialMatches = new PriorityQueue<>(NFAState.COMPUTATION_STATE_COMPARATOR);
+//		用于装这个元素使它完成匹配的
 		final PriorityQueue<ComputationState> potentialMatches = new PriorityQueue<>(NFAState.COMPUTATION_STATE_COMPARATOR);
 
 		// iterate over all current computations 先获取局部匹配的所有状态机用于遍历，看当前元素是否可以可以继续匹配未匹配完成的所有状态机
 		for (ComputationState computationState : nfaState.getPartialMatches()) {
 
+//			得到这个未完成状态的下一个计算状态们，
+//			这个元素属于这个未完成队列的下一个什么状态(可以是匹配的结束，也可以是未匹配完成的下一个，也可能是null即匹配失败)
 			final Collection<ComputationState> newComputationStates = computeNextStates(
 				sharedBufferAccessor,
 				computationState,
@@ -309,6 +314,7 @@ public class NFA<T> {
 			final Collection<ComputationState> statesToRetain = new ArrayList<>();
 			//if stop state reached in this path
 			boolean shouldDiscardPath = false;
+//			遍历所有下一个状态，当匹配上了就加入到完成队列里面去
 			for (final ComputationState newComputationState : newComputationStates) {
 //				完成匹配
 				if (isFinalState(newComputationState)) {
@@ -342,6 +348,7 @@ public class NFA<T> {
 		}
 
 		List<Map<String, List<T>>> result = new ArrayList<>();
+//		执行跳过策略
 		if (afterMatchSkipStrategy.isSkipStrategy()) {
 			processMatchesAccordingToSkipStrategy(sharedBufferAccessor,
 				nfaState,
@@ -363,6 +370,7 @@ public class NFA<T> {
 			}
 		}
 
+//		将这次得到的结果（未匹配完的）加入到NFAstate中用于下一个元素来了继续调用
 		nfaState.setNewPartialMatches(newPartialMatches);
 
 		return result;
@@ -509,7 +517,7 @@ public class NFA<T> {
 		}
 	}
 
-	/**
+	/** 计算当前元素属于，这个未完成状态的下一个什么状态
 	 * Computes the next computation states based on the given computation state, the current event,
 	 * its timestamp and the internal state machine. The algorithm is:
 	 *<ol>
