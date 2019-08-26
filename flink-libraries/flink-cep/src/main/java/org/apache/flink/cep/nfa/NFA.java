@@ -430,6 +430,7 @@ public class NFA<T> {
 	 * Class for storing resolved transitions. It counts at insert time the number of
 	 * branching transitions both for IGNORE and TAKE actions.
  	 */
+//	加入时会记录take,ignore ++
 	private static class OutgoingEdges<T> {
 		private List<StateTransition<T>> edges = new ArrayList<>();
 
@@ -524,7 +525,8 @@ public class NFA<T> {
 	 *     <li>Decide on valid transitions and number of branching paths. See {@link OutgoingEdges}</li>
 	 * 	   <li>Perform transitions:
 	 * 	   	<ol>
-	 *          <li>IGNORE (links in {@link SharedBuffer} will still point to the previous event)</li>
+	 *          <li>IGNORE (links in {@link SharedBuffer} (共享缓存区，用于解决相同状态重复重叠过多的问题)
+	 *          will still point to the previous event)</li>
 	 *          <ul>
 	 *              <li>do not perform for Start State - special case</li>
 	 *          	<li>if stays in the same state increase the current stage for future use with number of outgoing edges</li>
@@ -562,7 +564,7 @@ public class NFA<T> {
 			computationState,
 			timerService,
 			event.getTimestamp());
-
+//		创建描述的图
 		final OutgoingEdges<T> outgoingEdges = createDecisionGraph(context, computationState, event.getEvent());
 
 		// Create the computing version based on the previously computed edges

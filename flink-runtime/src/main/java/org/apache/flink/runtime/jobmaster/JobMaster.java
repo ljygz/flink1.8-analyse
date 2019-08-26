@@ -1039,7 +1039,7 @@ public class JobMaster extends FencedRpcEndpoint<JobMasterId> implements JobMast
 		}
 
 		setNewFencingToken(newJobMasterId);
-
+//		这里调用rpc jobmanager中的resourceManager接口 初始化了所有的solt到 resourceManager的soltManager
 		startJobMasterServices();
 
 		log.info("Starting execution of job {} ({}) under job master id {}.", jobGraph.getName(), jobGraph.getJobID(), newJobMasterId);
@@ -1064,6 +1064,7 @@ public class JobMaster extends FencedRpcEndpoint<JobMasterId> implements JobMast
 		//   - activate leader retrieval for the resource manager
 		//   - on notification of the leader, the connection will be established and
 		//     the slot pool will start requesting slots
+//		这里调用rpc jobmanager中的resourceManager接口 初始化了所有的solt到 resourceManager的soltManager
 		resourceManagerLeaderRetriever.start(new ResourceManagerLeaderListener());
 	}
 
@@ -1294,7 +1295,7 @@ public class JobMaster extends FencedRpcEndpoint<JobMasterId> implements JobMast
 
 	private void notifyOfNewResourceManagerLeader(final String newResourceManagerAddress, final ResourceManagerId resourceManagerId) {
 		resourceManagerAddress = createResourceManagerAddress(newResourceManagerAddress, resourceManagerId);
-
+//		这个地方初始化所有的solt到soltManager
 		reconnectToResourceManager(new FlinkException(String.format("ResourceManager leader changed to new address %s", resourceManagerAddress)));
 	}
 
@@ -1311,11 +1312,13 @@ public class JobMaster extends FencedRpcEndpoint<JobMasterId> implements JobMast
 
 	private void reconnectToResourceManager(Exception cause) {
 		closeResourceManagerConnection(cause);
+		//这个地方初始化所有的solt到soltManager
 		tryConnectToResourceManager();
 	}
 
 	private void tryConnectToResourceManager() {
 		if (resourceManagerAddress != null) {
+			//这个地方初始化所有的solt到soltManager
 			connectToResourceManager();
 		}
 	}
@@ -1336,7 +1339,7 @@ public class JobMaster extends FencedRpcEndpoint<JobMasterId> implements JobMast
 			resourceManagerAddress.getAddress(),
 			resourceManagerAddress.getResourceManagerId(),
 			scheduledExecutorService);
-
+//		这里调用rpc jobmanager中的resourceManager接口 初始化了所有的solt到soltManager
 		resourceManagerConnection.start();
 	}
 
@@ -1548,6 +1551,7 @@ public class JobMaster extends FencedRpcEndpoint<JobMasterId> implements JobMast
 		@Override
 		public void notifyLeaderAddress(final String leaderAddress, final UUID leaderSessionID) {
 			runAsync(
+//		这里调用rpc jobmanager中的resourceManager接口 初始化了所有的solt到soltManager
 				() -> notifyOfNewResourceManagerLeader(
 					leaderAddress,
 					ResourceManagerId.fromUuidOrNull(leaderSessionID)));
@@ -1619,6 +1623,7 @@ public class JobMaster extends FencedRpcEndpoint<JobMasterId> implements JobMast
 				// filter out outdated connections
 				//noinspection ObjectEquality
 				if (this == resourceManagerConnection) {
+
 					establishResourceManagerConnection(success);
 				}
 			});

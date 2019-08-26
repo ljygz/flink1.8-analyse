@@ -99,7 +99,7 @@ public class TaskExecutorToResourceManagerConnection
 	protected void onRegistrationSuccess(TaskExecutorRegistrationSuccess success) {
 		log.info("Successful registration at resource manager {} under registration id {}.",
 			getTargetAddress(), success.getRegistrationId());
-
+//		这里调用rpc jobmanager中的resourceManager接口 初始化了所有的solt到soltManager
 		registrationListener.onRegistrationSuccess(this, success);
 	}
 

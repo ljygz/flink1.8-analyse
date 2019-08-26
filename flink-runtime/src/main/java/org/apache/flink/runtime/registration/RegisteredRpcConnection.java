@@ -89,7 +89,7 @@ public abstract class RegisteredRpcConnection<F extends Serializable, G extends 
 	public void start() {
 		checkState(!closed, "The RPC connection is already closed");
 		checkState(!isConnected() && pendingRegistration == null, "The RPC connection is already started");
-
+//		这里调用rpc jobmanager中的resourceManager接口 初始化了所有的solt到soltManager
 		final RetryingRegistration<F, G, S> newRegistration = createNewRegistration();
 
 		if (REGISTRATION_UPDATER.compareAndSet(this, null, newRegistration)) {
@@ -111,7 +111,7 @@ public abstract class RegisteredRpcConnection<F extends Serializable, G extends 
 			if (currentPendingRegistration != null) {
 				currentPendingRegistration.cancel();
 			}
-
+//		这里调用rpc jobmanager中的resourceManager接口 初始化了所有的solt到soltManager
 			final RetryingRegistration<F, G, S> newRegistration = createNewRegistration();
 
 			if (REGISTRATION_UPDATER.compareAndSet(this, currentPendingRegistration, newRegistration)) {
@@ -232,6 +232,7 @@ public abstract class RegisteredRpcConnection<F extends Serializable, G extends 
 					}
 				} else {
 					targetGateway = result.f0;
+//		这里调用rpc jobmanager中的resourceManager接口 初始化了所有的solt到soltManager
 					onRegistrationSuccess(result.f1);
 				}
 			}, executor);

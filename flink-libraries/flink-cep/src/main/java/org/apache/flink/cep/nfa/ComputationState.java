@@ -26,7 +26,9 @@ import javax.annotation.Nullable;
 import java.util.Objects;
 
 /**
- * Helper class which encapsulates the currentStateName of the NFA computation. It points to the current currentStateName,
+ * 用于存储信息的类
+ * Helper class which encapsulates the currentStateName of the NFA computation.
+ * It points to the current currentStateName(指我们正则模式的名字""),
  * the previous entry of the pattern, the current version and the starting timestamp
  * of the overall pattern.
  */

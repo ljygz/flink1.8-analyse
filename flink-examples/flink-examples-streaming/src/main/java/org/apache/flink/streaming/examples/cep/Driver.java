@@ -17,7 +17,6 @@ import org.apache.flink.streaming.api.functions.AssignerWithPunctuatedWatermarks
 import org.apache.flink.streaming.api.functions.sink.TwoPhaseCommitSinkFunction;
 import org.apache.flink.streaming.api.watermark.Watermark;
 import org.apache.flink.streaming.api.windowing.time.Time;
-
 import javax.annotation.Nullable;
 import java.sql.Connection;
 import java.util.ArrayList;
@@ -60,17 +59,17 @@ public class Driver {
 			.where(new RichIterativeCondition<Tuple3<String, Long, String>>() {
 				@Override
 				public boolean filter(Tuple3<String, Long, String> value, Context<Tuple3<String, Long, String>> ctx) throws Exception {
-					return value.f0.equals("a");
+					return value.f0.equals("c");
 				}
 			})
 			.next("secound").where(new RichIterativeCondition<Tuple3<String, Long, String>>() {
 				@Override
 				public boolean filter(Tuple3<String, Long, String> value, Context<Tuple3<String, Long, String>> ctx) throws Exception {
-					return value.f0.equals("b");
+					return value.f0.equals("d");
 				}
 			})
 //			正则匹配的第一个元素的时间到最后一个元素的时间不能超过，这个时间
-		.within(Time.minutes(1));
+		.within(Time.minutes(5));
 
 		PatternStream patternStream = CEP.pattern(source, pattern);
 
@@ -78,13 +77,11 @@ public class Driver {
 			@Override
 			public Tuple2 select(Map pattern) throws Exception {
 			ArrayList start = (ArrayList) pattern.get("start");
-			ArrayList secound = (ArrayList) pattern.get("secound");
-			return new Tuple2<>(start.get(0).toString(),secound.get(0).toString());
+			ArrayList secound = (ArrayList) pattern.get("secound");    		return new Tuple2<>(start.get(0).toString(),secound.get(0).toString());
 			}
 		}).print();
 //		两个序列化第一个是提交事务的序列化对象，一般是connect,第二个config
-//			.addSink(new TwoPhaseCommitSinkFunction<Tuple2,Connection,Void>(new KryoSerializer(Connection.class,new ExecutionConfig()), VoidSerializer.INSTANCE));
-
+//		.addSink(new TwoPhaseCommitSinkFunction<Tuple2,Connection,Void>(new KryoSerializer(Connection.class,new ExecutionConfig()), VoidSerializer.INSTANCE));
 //		SkipToFirstStrategy skipToFirstStrategy = AfterMatchSkipStrategy.skipToFirst("start");
 
 		env.execute("cep");

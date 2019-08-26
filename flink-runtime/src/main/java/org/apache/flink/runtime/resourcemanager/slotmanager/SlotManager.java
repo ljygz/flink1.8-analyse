@@ -339,6 +339,8 @@ public class SlotManager implements AutoCloseable {
 	 * @param taskExecutorConnection for the new task manager
 	 * @param initialSlotReport for the new task manager
 	 */
+
+//	这个地方会初始化所有的solt到soltManager
 	public void registerTaskManager(final TaskExecutorConnection taskExecutorConnection, SlotReport initialSlotReport) {
 		checkInit();
 
@@ -363,6 +365,7 @@ public class SlotManager implements AutoCloseable {
 
 			// next register the new slots
 			for (SlotStatus slotStatus : initialSlotReport) {
+//				这个方法会向可用的solt集合中加入新的solt
 				registerSlot(
 					slotStatus.getSlotID(),
 					slotStatus.getAllocationID(),
@@ -536,6 +539,8 @@ public class SlotManager implements AutoCloseable {
 	 * @param resourceProfile of the slot
 	 * @param taskManagerConnection to communicate with the remote task manager
 	 */
+
+//	这个方法会向可用的solt集合中加入新的solt
 	private void registerSlot(
 			SlotID slotId,
 			AllocationID allocationId,

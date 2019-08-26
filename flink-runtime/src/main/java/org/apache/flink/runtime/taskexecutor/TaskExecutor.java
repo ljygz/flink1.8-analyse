@@ -937,6 +937,7 @@ public class TaskExecutor extends RpcEndpoint implements TaskExecutorGateway {
 				resourceManagerAddress.getResourceManagerId(),
 				getMainThreadExecutor(),
 				new ResourceManagerRegistrationListener());
+//		这里调用rpc jobmanager中的resourceManager接口 初始化了所有的solt到soltManager
 		resourceManagerConnection.start();
 	}
 
@@ -945,7 +946,7 @@ public class TaskExecutor extends RpcEndpoint implements TaskExecutorGateway {
 			ResourceID resourceManagerResourceId,
 			InstanceID taskExecutorRegistrationId,
 			ClusterInformation clusterInformation) {
-
+//		这里调用rpc jobmanager中的resourceManager接口 初始化了所有的solt到soltManager
 		final CompletableFuture<Acknowledge> slotReportResponseFuture = resourceManagerGateway.sendSlotReport(
 			getResourceID(),
 			taskExecutorRegistrationId,
@@ -1560,6 +1561,7 @@ public class TaskExecutor extends RpcEndpoint implements TaskExecutorGateway {
 					// filter out outdated connections
 					//noinspection ObjectEquality
 					if (resourceManagerConnection == connection) {
+//		这里调用rpc jobmanager中的resourceManager接口 初始化了所有的solt到soltManager
 						establishResourceManagerConnection(
 							resourceManagerGateway,
 							resourceManagerId,

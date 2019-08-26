@@ -49,6 +49,7 @@ public enum StandaloneResourceManagerFactory implements ResourceManagerFactory<R
 			@Nullable String webInterfaceUrl,
 			JobManagerMetricGroup jobManagerMetricGroup) throws Exception {
 		final ResourceManagerRuntimeServicesConfiguration resourceManagerRuntimeServicesConfiguration = ResourceManagerRuntimeServicesConfiguration.fromConfiguration(configuration);
+//		这个地方通过配置文件创建这个resourceManagerService里面包含初始化了一个soltManager
 		final ResourceManagerRuntimeServices resourceManagerRuntimeServices = ResourceManagerRuntimeServices.fromConfiguration(
 			resourceManagerRuntimeServicesConfiguration,
 			highAvailabilityServices,

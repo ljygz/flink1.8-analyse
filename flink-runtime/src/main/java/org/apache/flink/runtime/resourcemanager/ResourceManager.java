@@ -405,6 +405,7 @@ public abstract class ResourceManager<WorkerType extends ResourceIDRetrievable>
 			getMainThreadExecutor());
 	}
 
+//	这个rpc 初始化所有的solt到soltManager
 	@Override
 	public CompletableFuture<Acknowledge> sendSlotReport(ResourceID taskManagerResourceId, InstanceID taskManagerRegistrationId, SlotReport slotReport, Time timeout) {
 		final WorkerRegistration<WorkerType> workerTypeWorkerRegistration = taskExecutors.get(taskManagerResourceId);
