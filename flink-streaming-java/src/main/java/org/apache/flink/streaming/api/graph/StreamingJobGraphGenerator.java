@@ -143,7 +143,9 @@ public class StreamingJobGraphGenerator {
 
 		// Generate deterministic hashes for the nodes in order to identify them across
 		// submission iff they didn't change.
-//		广度优先遍历所有streamGraph的node生成hash散列值
+//		广度优先遍历为所有streamGraph的node 即operator生成hash散列值，当用户job没有改变代码逻辑时是会生成同一个hash值
+//			为什么要生成这个operator的hash值？
+//				因为cp 恢复的时候会将所有的operator恢复 会用到每个
 		Map<Integer, byte[]> hashes = defaultStreamGraphHasher.traverseStreamGraphAndGenerateHashes(streamGraph);
 
 		// Generate legacy version hashes for backwards compatibility
@@ -154,7 +156,7 @@ public class StreamingJobGraphGenerator {
 
 		Map<Integer, List<Tuple2<byte[], byte[]>>> chainedOperatorHashes = new HashMap<>();
 
-//		生成边，点，以及优化将可以chain的链在一起
+//		生成边，点，以及优化将可以chain的streamGraph的node链在一起
 		setChaining(hashes, legacyHashes, chainedOperatorHashes);
 
 		setPhysicalEdges();
@@ -230,7 +232,9 @@ public class StreamingJobGraphGenerator {
 			List<StreamEdge> nonChainableOutputs = new ArrayList<StreamEdge>();
 
 //			将edge边链在一起
+//			获取某个源node的下游的所有边edges，遍历所有下游的边
 			for (StreamEdge outEdge : streamGraph.getStreamNode(currentNodeId).getOutEdges()) {
+//				这个方法里面就是 chain的条件，判断是否可以chain
 				if (isChainable(outEdge, streamGraph)) {
 					chainableOutputs.add(outEdge);
 				} else {

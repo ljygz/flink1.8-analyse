@@ -852,6 +852,7 @@ public class ExecutionGraph implements AccessExecutionGraph {
 			}
 
 			// create the execution job vertex and attach it to the graph
+//			将jobGraph的顶点转化成ExecutionGraph的顶点ExecutionJobVertex
 			ExecutionJobVertex ejv = new ExecutionJobVertex(
 				this,
 				jobVertex,
@@ -1420,10 +1421,12 @@ public class ExecutionGraph implements AccessExecutionGraph {
 		}
 
 		// now do the actual state transition
+//		CAS修改job状态
 		if (STATE_UPDATER.compareAndSet(this, current, newState)) {
 			LOG.info("Job {} ({}) switched from state {} to {}.", getJobName(), getJobID(), current, newState, error);
 
 			stateTimestamps[newState.ordinal()] = System.currentTimeMillis();
+//			这里会触发前面注册的监听器，包括coordinator启动的那个监听器
 			notifyJobStatusChange(newState, error);
 			return true;
 		}

@@ -323,8 +323,8 @@ public class CepOperator<IN, KEY, OUT>
 
 		// STEP 1		得到了所有数据事件时间的优先队列（按事件时间排序）
 		PriorityQueue<Long> sortedTimestamps = getSortedTimestamps();
+//		用于保存未匹配完成的状态，和已匹配完成的状态
 		NFAState nfaState = getNFAState();
-
 		// STEP 2  只有数据按事件时间的优先队列里面的第一个元素事件时间小于当前水印就触发
 		while (!sortedTimestamps.isEmpty() && sortedTimestamps.peek() <= timerService.currentWatermark()) {
 			long timestamp = sortedTimestamps.poll();
@@ -430,6 +430,7 @@ public class CepOperator<IN, KEY, OUT>
 	 * @param timestamp The timestamp of the event
 	 */
 	private void processEvent(NFAState nfaState, IN event, long timestamp)throws Exception {
+//		用于获取访问共享缓冲区的访问器，其中包含了一个sharedBuffer 的共享缓存，用于存储未匹配完成的事件
 		try (SharedBufferAccessor<IN> sharedBufferAccessor = partialMatches.getAccessor()) {
 			Collection<Map<String, List<IN>>> patterns =
 				nfa.process(sharedBufferAccessor, nfaState, event, timestamp, afterMatchSkipStrategy, cepTimerService);
