@@ -430,6 +430,7 @@ public class StreamSourceContexts {
 		@Override
 		public void markAsTemporarilyIdle() {
 			synchronized (checkpointLock) {
+//				将这条流的状态，修改为idle闲置状态,并且会往他所有的下游发送
 				streamStatusMaintainer.toggleStreamStatus(StreamStatus.IDLE);
 			}
 		}

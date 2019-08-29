@@ -26,6 +26,7 @@ import org.apache.flink.streaming.runtime.streamrecord.StreamRecord;
 import org.apache.flink.streaming.runtime.tasks.ProcessingTimeCallback;
 
 /**
+ *
  * A {@link org.apache.flink.streaming.api.operators.StreamOperator} for extracting timestamps
  * from user elements and assigning them as the internal timestamp of the {@link StreamRecord}.
  *
@@ -63,8 +64,10 @@ public class ExtractTimestampsOperator<T>
 
 	@Override
 	public void processElement(StreamRecord<T> element) throws Exception {
+//		调用我们用户的extractTimestamp方法，生成事件时间附在数据上
 		long newTimestamp = userFunction.extractTimestamp(element.getValue(), element.getTimestamp());
 		output.collect(element.replace(element.getValue(), newTimestamp));
+//		调用我们用户的extractWatermark方法，生成水印时间，直接往下游发送
 		long watermark = userFunction.extractWatermark(element.getValue(), newTimestamp);
 		if (watermark > currentWatermark) {
 			currentWatermark = watermark;

@@ -412,7 +412,6 @@ public class WindowOperator<K, IN, ACC, OUT, W extends Window>
 					if (contents == null) {
 						continue;
 					}
-//
 					emitWindowContents(window, contents);
 				}
 

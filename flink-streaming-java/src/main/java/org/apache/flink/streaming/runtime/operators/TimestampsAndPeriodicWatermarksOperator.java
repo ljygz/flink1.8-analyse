@@ -53,6 +53,7 @@ public class TimestampsAndPeriodicWatermarksOperator<T>
 		currentWatermark = Long.MIN_VALUE;
 		watermarkInterval = getExecutionConfig().getAutoWatermarkInterval();
 
+//		周期性的水印，是通过处理时间实现的，（一开始会先获取当前的真实时间+我们设置的水印间隔）来作为一个定时触发器
 		if (watermarkInterval > 0) {
 			long now = getProcessingTimeService().getCurrentProcessingTime();
 			getProcessingTimeService().registerTimer(now + watermarkInterval, this);
@@ -76,7 +77,7 @@ public class TimestampsAndPeriodicWatermarksOperator<T>
 			// emit watermark
 			output.emitWatermark(newWatermark);
 		}
-
+//		获取当前的水印然后发出去,又继续注册一个当前时间+间隔 作为定时器,这样一个周期性触发水印往下游发送的实现就完成了
 		long now = getProcessingTimeService().getCurrentProcessingTime();
 		getProcessingTimeService().registerTimer(now + watermarkInterval, this);
 	}

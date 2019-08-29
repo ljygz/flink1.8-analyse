@@ -260,6 +260,7 @@ public interface SourceFunction<T> extends Function, Serializable {
 		 * again once {@link SourceContext#collect(T)}, {@link SourceContext#collectWithTimestamp(T, long)},
 		 * or {@link SourceContext#emitWatermark(Watermark)} is called to emit elements or watermarks from the source.
 		 */
+//		这里的目的主要是解决当上游source数据,某管道没有数据了，但是又是正常的我还是想下游继续运行窗口怎么办呢？
 		@PublicEvolving
 		void markAsTemporarilyIdle();
 

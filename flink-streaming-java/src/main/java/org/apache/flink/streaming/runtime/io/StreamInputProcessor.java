@@ -182,10 +182,14 @@ public class StreamInputProcessor<IN> {
 //					这里面会包含一个，这个水印是否触发定时器，包含所有定时器遍历的逻辑
 					if (recordOrMark.isWatermark()) {
 						// handle watermark  定时器遍历的逻辑
+//						既然这里接收上游水印，肯定有更新当前最小水印的逻辑
 						statusWatermarkValve.inputWatermark(recordOrMark.asWatermark(), currentChannel);
 						continue;
+//						这个地方其实是用来接收上游流的状态的 ，因为可能有 流停滞（既这条流占时就是没有数据了，但是我还是想继续触发窗口计算）
+//						就是忽略掉上游这条流嘛，不让他参与更新最小水印
 					} else if (recordOrMark.isStreamStatus()) {
 						// handle stream status
+//						忙猜这里就是更新状态了，如果是Idle，这条上游流的状态就修改成停滞流
 						statusWatermarkValve.inputStreamStatus(recordOrMark.asStreamStatus(), currentChannel);
 						continue;
 					} else if (recordOrMark.isLatencyMarker()) {

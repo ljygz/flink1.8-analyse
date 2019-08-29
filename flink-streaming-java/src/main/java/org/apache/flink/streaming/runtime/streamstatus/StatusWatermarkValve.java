@@ -94,6 +94,8 @@ public class StatusWatermarkValve {
 	 * @param channelIndex the index of the channel that the fed watermark belongs to (index starting from 0)
 	 */
 	public void inputWatermark(Watermark watermark, int channelIndex) {
+//		！！！！！！！这个注释当时没有看到，人家明明已经说勒忽略掉idle的上游流产生的水印,如果不是停滞流 idle 则会在下面更新最小水印的
+//		时候忽略停滞流
 		// ignore the input watermark if its input channel, or all input channels are idle (i.e. overall the valve is idle).
 		if (lastOutputStreamStatus.isActive() && channelStatuses[channelIndex].streamStatus.isActive()) {
 			long watermarkMillis = watermark.getTimestamp();
@@ -124,7 +126,7 @@ public class StatusWatermarkValve {
 	public void inputStreamStatus(StreamStatus streamStatus, int channelIndex) {
 		// only account for stream status inputs that will result in a status change for the input channel
 		if (streamStatus.isIdle() && channelStatuses[channelIndex].streamStatus.isActive()) {
-			// handle active -> idle toggle for the input channel
+			// handle active -> idle toggle for the input channel 流停滞 idle状态时 同时会修改channel的状态也是idle
 			channelStatuses[channelIndex].streamStatus = StreamStatus.IDLE;
 
 			// the channel is now idle, therefore not aligned
@@ -177,6 +179,9 @@ public class StatusWatermarkValve {
 		// determine new overall watermark by considering only watermark-aligned channels across all channels
 //		这里输出新的水印会从所有上游输入的watermark中选最小的
 		for (InputChannelStatus channelStatus : channelStatuses) {
+//			注意这里会判断channel的状态，当这条上游流为停滞流 idle时 ，是不会进入更新最小水印的逻辑的
+//			即我的上游一条流，不往下发数据了，他的水印是最小不在更新了，
+//			那我每次求最小的水印都是那条不产生数据的流的水印（这是不会发生的因为排除了idle流）
 			if (channelStatus.isWatermarkAligned) {
 				hasAlignedChannels = true;
 				newMinWatermark = Math.min(channelStatus.watermark, newMinWatermark);
