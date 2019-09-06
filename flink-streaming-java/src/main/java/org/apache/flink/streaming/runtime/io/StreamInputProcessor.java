@@ -189,7 +189,7 @@ public class StreamInputProcessor<IN> {
 //						就是忽略掉上游这条流嘛，不让他参与更新最小水印
 					} else if (recordOrMark.isStreamStatus()) {
 						// handle stream status
-//						忙猜这里就是更新状态了，如果是Idle，这条上游流的状态就修改成停滞流
+//						盲猜这里就是更新状态了，如果是Idle，这条上游流的状态就修改成停滞流
 						statusWatermarkValve.inputStreamStatus(recordOrMark.asStreamStatus(), currentChannel);
 						continue;
 					} else if (recordOrMark.isLatencyMarker()) {

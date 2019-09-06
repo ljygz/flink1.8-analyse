@@ -138,7 +138,7 @@ public class PatternStream<T> {
 			builder.getInputType(),
 			null,
 			false);
-
+//这个方法包含生成operator的逻辑
 		return select(patternSelectFunction, returnType);
 	}
 
@@ -159,9 +159,11 @@ public class PatternStream<T> {
 			final PatternSelectFunction<T, R> patternSelectFunction,
 			final TypeInformation<R> outTypeInfo) {
 
+//		这个对象会被序列化往网络发送，其实就是后面的cepOperator
 		final PatternProcessFunction<T, R> processFunction =
+			//这个方法包含生成operator的逻辑
 			fromSelect(builder.clean(patternSelectFunction)).build();
-
+//    这个方法会创建真正的nfafactory包含nfa.statue
 		return process(processFunction, outTypeInfo);
 	}
 

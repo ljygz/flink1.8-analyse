@@ -692,6 +692,7 @@ public class SingleInputGate implements InputGate {
 //			根据partition位置分为本地,远程
 			final ResultPartitionLocation partitionLocation = icdd[i].getConsumedPartitionLocation();
 
+//			这个的意思是本地，也就是说是同一台机器的不同task，也可以是无法chain的两个task,上游和自己是本机
 			if (partitionLocation.isLocal()) {
 				inputChannels[i] = new LocalInputChannel(inputGate, i, partitionId,
 					networkEnvironment.getResultPartitionManager(),

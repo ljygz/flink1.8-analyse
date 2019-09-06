@@ -422,6 +422,7 @@ public abstract class StreamTask<OUT, OP extends StreamOperator<OUT>>
 	 * to {@link StreamOperator#close()} which happens <b>head to tail</b>
 	 * (see {@link #closeAllOperators()}.
 	 */
+//	这里其实是初始化所有operator的open方法
 	private void openAllOperators() throws Exception {
 		for (StreamOperator<?> operator : operatorChain.getAllOperators()) {
 			if (operator != null) {
@@ -823,7 +824,7 @@ public abstract class StreamTask<OUT, OP extends StreamOperator<OUT>>
 	protected static final class AsyncCheckpointRunnable implements Runnable, Closeable {
 
 		private final StreamTask<?, ?> owner;
-//		包含所有operator的状态
+//		包含所有operator的key和operator状态的future
 		private final Map<OperatorID, OperatorSnapshotFutures> operatorSnapshotsInProgress;
 
 		private final CheckpointMetaData checkpointMetaData;
@@ -858,7 +859,7 @@ public abstract class StreamTask<OUT, OP extends StreamOperator<OUT>>
 
 				TaskStateSnapshot localTaskOperatorSubtaskStates =
 					new TaskStateSnapshot(operatorSnapshotsInProgress.size());
-
+//				遍历所有的operator 的future
 				for (Map.Entry<OperatorID, OperatorSnapshotFutures> entry : operatorSnapshotsInProgress.entrySet()) {
 
 					OperatorID operatorID = entry.getKey();
@@ -866,14 +867,17 @@ public abstract class StreamTask<OUT, OP extends StreamOperator<OUT>>
 
 					// finalize the async part of all by executing all snapshot runnables
 					OperatorSnapshotFinalizer finalizedSnapshots =
+//						这里启动了所有的future
 						new OperatorSnapshotFinalizer(snapshotInProgress);
 
 					jobManagerTaskOperatorSubtaskStates.putSubtaskStateByOperatorID(
 						operatorID,
+//						获取异步future完成get的结果
 						finalizedSnapshots.getJobManagerOwnedState());
 
 					localTaskOperatorSubtaskStates.putSubtaskStateByOperatorID(
 						operatorID,
+//						获取异步future完成get的结果
 						finalizedSnapshots.getTaskLocalState());
 				}
 
@@ -1067,7 +1071,9 @@ public abstract class StreamTask<OUT, OP extends StreamOperator<OUT>>
 
 			try {
 				for (StreamOperator<?> op : allOperators) {
-//					遍历保存task中所有operater的状态到map中
+//					遍历保存task中所有operater的状态创建future到map中！！！！这就是保存operator内状态的操作
+//					创建future到operatorSnapshotsInProgress里面!!!!!!future里面就是具体的逻辑，以后会全部被启动起来
+//			！！！！！！！！！！！！！
 					checkpointStreamOperator(op);
 				}
 
@@ -1081,7 +1087,8 @@ public abstract class StreamTask<OUT, OP extends StreamOperator<OUT>>
 				checkpointMetrics.setSyncDurationMillis((startAsyncPartNano - startSyncPartNano) / 1_000_000);
 
 				// we are transferring ownership over snapshotInProgressList for cleanup to the thread, active on submit
-//				异步线程用于保存状态
+//				异步线程用于保存状态 ,返回的其实是一个runnable对象，里面包含了所有operator的key,operator statu的future
+//				运行
 				AsyncCheckpointRunnable asyncCheckpointRunnable = new AsyncCheckpointRunnable(
 					owner,
 					operatorSnapshotsInProgress,
@@ -1090,6 +1097,8 @@ public abstract class StreamTask<OUT, OP extends StreamOperator<OUT>>
 					startAsyncPartNano);
 
 				owner.cancelables.registerCloseable(asyncCheckpointRunnable);
+
+//				这个future被submit了， 也就是说里面包含的那些future
 				owner.asyncOperationsThreadPool.submit(asyncCheckpointRunnable);
 
 				if (LOG.isDebugEnabled()) {
@@ -1126,12 +1135,13 @@ public abstract class StreamTask<OUT, OP extends StreamOperator<OUT>>
 		@SuppressWarnings("deprecation")
 		private void checkpointStreamOperator(StreamOperator<?> op) throws Exception {
 			if (null != op) {
-//				走到了operator的状态保存
+//				走到了operator的状态保存,返回的这个对象里面，包含了operator的获取keystatue,opeartorstatus的future
 				OperatorSnapshotFutures snapshotInProgress = op.snapshotState(
 						checkpointMetaData.getCheckpointId(),
 						checkpointMetaData.getTimestamp(),
 						checkpointOptions,
 						storageLocation);
+//				把这些future全部放到map里面去了
 				operatorSnapshotsInProgress.put(op.getOperatorID(), snapshotInProgress);
 			}
 		}

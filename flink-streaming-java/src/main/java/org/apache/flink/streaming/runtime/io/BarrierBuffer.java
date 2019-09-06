@@ -234,11 +234,12 @@ public class BarrierBuffer implements CheckpointBarrierHandler {
 	private void processBarrier(CheckpointBarrier receivedBarrier, int channelIndex) throws Exception {
 		final long barrierId = receivedBarrier.getId();
 
-		// fast path for single channel cases
+		// fast path for single channel cases 如果上游只有一个channel 也就是说不用对齐了，barrier到了直接触发cp
 		if (totalNumberOfInputChannels == 1) {
 			if (barrierId > currentCheckpointId) {
 				// new checkpoint
 				currentCheckpointId = barrierId;
+//				通知触发cp
 				notifyCheckpoint(receivedBarrier);
 			}
 			return;
@@ -252,7 +253,7 @@ public class BarrierBuffer implements CheckpointBarrierHandler {
 			// this is only true if some alignment is already progress and was not canceled
 
 			if (barrierId == currentCheckpointId) {
-				// regular case
+				// regular case 当接收到一个当前id的barrier如果那个channel为！block 接收到的numBarriersReceived数++
 				onBarrier(channelIndex);
 			}
 			else if (barrierId > currentCheckpointId) {
@@ -301,7 +302,7 @@ public class BarrierBuffer implements CheckpointBarrierHandler {
 					receivedBarrier.getId(),
 					receivedBarrier.getTimestamp());
 			}
-//			释放柱塞
+//			释放柱塞 前面每个channel收到barrier就会把blocked变成true,已接收的barriers数量又变为0
 			releaseBlocksAndResetBarriers();
 //			进行checkpoint
 			notifyCheckpoint(receivedBarrier);
@@ -407,7 +408,7 @@ public class BarrierBuffer implements CheckpointBarrierHandler {
 			CheckpointMetrics checkpointMetrics = new CheckpointMetrics()
 					.setBytesBufferedInAlignment(bytesBuffered)
 					.setAlignmentDurationNanos(latestAlignmentDurationNanos);
-
+//			触发
 			toNotifyOnCheckpoint.triggerCheckpointOnBarrier(
 				checkpointMetaData,
 				checkpointBarrier.getCheckpointOptions(),

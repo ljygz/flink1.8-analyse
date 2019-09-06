@@ -34,12 +34,16 @@ import java.util.Objects;
  *
  * @param <T> Type of the input events
  */
+//statue就是nfa中将正则表达式转换成图中的顶点
+//	顶点分为 start normal final
+//	边为stateTransition
 public class State<T> implements Serializable {
 	private static final long serialVersionUID = 6658700025989097781L;
 
 	private final String name;
 	private StateType stateType;
-	private final Collection<StateTransition<T>> stateTransitions;
+//	为了修改这里注入逻辑，改为private->public
+		public final Collection<StateTransition<T>> stateTransitions;
 
 	public State(final String name, final StateType stateType) {
 		this.name = name;
@@ -76,8 +80,12 @@ public class State<T> implements Serializable {
 			final StateTransitionAction action,
 			final State<T> targetState,
 			final IterativeCondition<T> condition) {
+//		这里new了一个StateTransition对象，就是一条边，表示一个状态怎么转换到另一个状态，这个condition包含了Driver端用户的逻辑
 		stateTransitions.add(new StateTransition<T>(this, action, targetState, condition));
 	}
+
+
+//	---------------------    下面这些 都是 为这个状态添加边的操作   ---------------------
 
 	public void addIgnore(final IterativeCondition<T> condition) {
 		addStateTransition(StateTransitionAction.IGNORE, this, condition);

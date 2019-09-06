@@ -33,10 +33,17 @@ import static org.apache.flink.util.Preconditions.checkNotNull;
 /**
  * Adapter that expresses {@link PatternSelectFunction} with {@link PatternProcessFunction}.
  */
+//这个类用户端创建，最后会序列化到flink cepOperator 作为userfunction
 @Internal
 public class PatternSelectAdapter<IN, OUT> extends PatternProcessFunction<IN, OUT> {
 
 	private final PatternSelectFunction<IN, OUT> selectFunction;
+
+
+//	自己想在API中注入自己的逻辑，尝试添加方法留给用户实现
+	public void helloFlink(){
+		System.out.println("success");
+	}
 
 	public PatternSelectAdapter(final PatternSelectFunction<IN, OUT> selectFunction) {
 		this.selectFunction = checkNotNull(selectFunction);

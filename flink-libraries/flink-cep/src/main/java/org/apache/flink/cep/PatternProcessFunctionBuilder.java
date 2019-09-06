@@ -117,6 +117,7 @@ class PatternProcessFunctionBuilder {
 		}
 
 		PatternProcessFunction<IN, OUT> build() {
+			//这个方法包含生成operator的逻辑，这个对象会序列化到运行节点其实就是后面的cepOperator中的userFunction
 			return new PatternSelectAdapter<>(selectFunction);
 		}
 	}

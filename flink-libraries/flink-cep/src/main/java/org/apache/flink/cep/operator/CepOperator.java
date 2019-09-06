@@ -29,17 +29,18 @@ import org.apache.flink.api.common.typeutils.TypeSerializer;
 import org.apache.flink.api.common.typeutils.base.ListSerializer;
 import org.apache.flink.api.common.typeutils.base.LongSerializer;
 import org.apache.flink.api.java.tuple.Tuple2;
+import org.apache.flink.api.java.tuple.Tuple3;
 import org.apache.flink.cep.EventComparator;
 import org.apache.flink.cep.functions.PatternProcessFunction;
 import org.apache.flink.cep.functions.TimedOutPartialMatchHandler;
-import org.apache.flink.cep.nfa.NFA;
+import org.apache.flink.cep.functions.adaptors.PatternSelectAdapter;
+import org.apache.flink.cep.nfa.*;
 import org.apache.flink.cep.nfa.NFA.MigratedNFA;
-import org.apache.flink.cep.nfa.NFAState;
-import org.apache.flink.cep.nfa.NFAStateSerializer;
 import org.apache.flink.cep.nfa.aftermatch.AfterMatchSkipStrategy;
 import org.apache.flink.cep.nfa.compiler.NFACompiler;
 import org.apache.flink.cep.nfa.sharedbuffer.SharedBuffer;
 import org.apache.flink.cep.nfa.sharedbuffer.SharedBufferAccessor;
+import org.apache.flink.cep.pattern.conditions.IterativeCondition;
 import org.apache.flink.cep.time.TimerService;
 import org.apache.flink.configuration.Configuration;
 import org.apache.flink.runtime.state.KeyedStateFunction;
@@ -62,11 +63,7 @@ import org.apache.flink.util.Preconditions;
 import javax.annotation.Nullable;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.PriorityQueue;
+import java.util.*;
 import java.util.stream.Stream;
 
 /**
@@ -131,6 +128,8 @@ public class CepOperator<IN, KEY, OUT>
 	private transient TimestampedCollector<OUT> collector;
 
 	/** Wrapped RuntimeContext that limits the underlying context features. */
+//	这个context其实就是nfa.statue.边.condition中的context
+//	这个context对象，后面会赋给所有的nfa中所有的边transition的condition对象，用于condition对象获取context通过name获取其他的数据
 	private transient CepRuntimeContext cepRuntimeContext;
 
 	/** Thin context passed to NFA that gives access to time related characteristics. */
@@ -216,8 +215,9 @@ public class CepOperator<IN, KEY, OUT>
 				"watermark-callbacks",
 				VoidNamespaceSerializer.INSTANCE,
 				this);
-
+//		创建nfa 初始化了所有的顶点statue 和边transition
 		nfa = nfaFactory.createNFA();
+//		这个地方为所有的边transition设置了cepRuntimeContext
 		nfa.open(cepRuntimeContext, new Configuration());
 
 		context = new ContextFunctionImpl();
@@ -235,6 +235,40 @@ public class CepOperator<IN, KEY, OUT>
 
 	@Override
 	public void processElement(StreamRecord<IN> element) throws Exception {
+
+//		PatternSelectAdapter myclass = (PatternSelectAdapter) this.userFunction;
+//		myclass.helloFlink();
+//		修改想从中注入cep逻辑 ，通过修改nfa中的states
+		Map<String, State<IN>> states = nfa.states;
+		State<IN> endState = states.get("$endState$");
+		State<IN> secound = states.get("secound");
+		StateTransition<IN> next = secound.stateTransitions.iterator().next();
+		next.setCondition(new IterativeCondition<IN>() {
+			@Override
+			public boolean filter(IN value, Context<IN> ctx) throws Exception {
+				Tuple3<String, Long, String> value1 = (Tuple3<String, Long, String>) value;
+				return value1.f0.equals("b");
+			}
+		});
+//////		我新添加的逻辑
+		State<IN> mylj = new State<>("MYLJ", State.StateType.Normal);
+		mylj.addTake(endState, new IterativeCondition<IN>() {
+			@Override
+			public boolean filter(IN value, Context<IN> ctx) throws Exception {
+				Tuple3<String, Long, String> value1 = (Tuple3<String, Long, String>) value;
+				return value1.f0.equals("c");
+			}
+		});
+		HashMap<String, State<IN>> newh = new HashMap<>();
+		newh.putAll(states);
+		newh.put("MYLJ",mylj);
+//		next是secound的边
+		State<IN> disan = next.getTargetState();
+		next.setTargetState(mylj);
+		Collection<StateTransition<IN>> stateTransitions = mylj.getStateTransitions();
+		nfa.states = newh;
+//		------ 上面都是自己的逻辑 -----
+
 //		系统时间不用排序
 		if (isProcessingTime) {
 			if (comparator == null) {

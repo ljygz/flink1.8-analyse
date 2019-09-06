@@ -43,6 +43,7 @@ public class OperatorSnapshotFinalizer {
 	public OperatorSnapshotFinalizer(
 		@Nonnull OperatorSnapshotFutures snapshotFutures) throws ExecutionException, InterruptedException {
 
+//		这里就是异步future返回的结果了
 		SnapshotResult<KeyedStateHandle> keyedManaged =
 			FutureUtils.runIfNotDoneAndGet(snapshotFutures.getKeyedStateManagedFuture());
 

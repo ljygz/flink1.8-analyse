@@ -114,8 +114,10 @@ final class PatternStreamBuilder<IN> {
 		final boolean isProcessingTime = inputStream.getExecutionEnvironment().getStreamTimeCharacteristic() == TimeCharacteristic.ProcessingTime;
 
 		final boolean timeoutHandling = processFunction instanceof TimedOutPartialMatchHandler;
+//		这里通过parttern 创建了nfafactory 里面其实已经生成了nfa创建的图，也就是说我们怎么获取这个pattern
 		final NFACompiler.NFAFactory<IN> nfaFactory = NFACompiler.compileFactory(pattern, timeoutHandling);
 
+//		唯一创建cepOpeator的地方
 		final CepOperator<IN, K, OUT> operator = new CepOperator<>(
 			inputSerializer,
 			isProcessingTime,
@@ -147,7 +149,7 @@ final class PatternStreamBuilder<IN> {
 	}
 
 	// ---------------------------------------- factory-like methods ---------------------------------------- //
-
+// 通过赋值pattern对象用于build方法创建nfafactory.nfa.statue
 	static <IN> PatternStreamBuilder<IN> forStreamAndPattern(final DataStream<IN> inputStream, final Pattern<IN, ?> pattern) {
 		return new PatternStreamBuilder<>(inputStream, pattern, null, null);
 	}

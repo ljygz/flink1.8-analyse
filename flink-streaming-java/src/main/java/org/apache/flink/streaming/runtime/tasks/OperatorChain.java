@@ -187,9 +187,8 @@ public class OperatorChain<OUT, OP extends StreamOperator<OUT>> implements Strea
 	public void toggleStreamStatus(StreamStatus status) {
 		if (!status.equals(this.streamStatus)) {
 			this.streamStatus = status;
-
 			// try and forward the stream status change to all outgoing connections
-			//				将这条流的状态，修改为idle闲置状态,并且会往他所有的下游发送
+			//	将这条流的状态，修改为idle闲置状态,并且会往他所有的下游发送
 			for (RecordWriterOutput<?> streamOutput : streamOutputs) {
 				streamOutput.emitStreamStatus(status);
 			}

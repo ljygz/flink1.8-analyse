@@ -89,7 +89,8 @@ public class NFA<T> {
 	 * {@link NFACompiler NFACompiler}.
 	 * These are directly derived from the user-specified pattern.
 	 */
-	private final Map<String, State<T>> states;
+//	简单版本 修改为private -> public 用于修改 并且去掉了final
+	public  Map<String, State<T>> states;
 
 	/**
 	 * The length of a windowed pattern, as specified using the
@@ -180,6 +181,7 @@ public class NFA<T> {
 		for (State<T> state : getStates()) {
 			for (StateTransition<T> transition : state.getStateTransitions()) {
 				IterativeCondition condition = transition.getCondition();
+//				这个地方为所有边 StateTransition 设置了cepRuntimeContext 这个是用来condition获取数据的通过name
 				FunctionUtils.setFunctionRuntimeContext(condition, cepRuntimeContext);
 				FunctionUtils.openFunction(condition, conf);
 			}
@@ -298,6 +300,7 @@ public class NFA<T> {
 
 //			得到这个未完成状态的下一个计算状态们，
 //			这个元素属于这个未完成队列的下一个什么状态(可以是匹配的结束，也可以是未匹配完成的下一个，也可能是null即匹配失败)
+//			!!!!!!!!这里是会走用户判断逻辑的
 			final Collection<ComputationState> newComputationStates = computeNextStates(
 				sharedBufferAccessor,
 				computationState,
@@ -564,7 +567,7 @@ public class NFA<T> {
 			computationState,
 			timerService,
 			event.getTimestamp());
-//		创建描述的图
+//		创建描述的图，这个地方会走，用户的filter逻辑代码
 		final OutgoingEdges<T> outgoingEdges = createDecisionGraph(context, computationState, event.getEvent());
 
 		// Create the computing version based on the previously computed edges
@@ -740,6 +743,7 @@ public class NFA<T> {
 			// check all state transitions for each state
 			for (StateTransition<T> stateTransition : stateTransitions) {
 				try {
+//					这个地方会走用户代码逻辑，传入的这个Condition.filter()方法就是用户的
 					if (checkFilterCondition(context, stateTransition.getCondition(), event)) {
 						// filter condition is true
 						switch (stateTransition.getAction()) {
@@ -762,8 +766,10 @@ public class NFA<T> {
 		return outgoingEdges;
 	}
 
+//	这个地方是走用户自己的逻辑
 	private boolean checkFilterCondition(
 			ConditionContext context,
+//			这个condition包含了用户代码的逻辑
 			IterativeCondition<T> condition,
 			T event) throws Exception {
 		return condition == null || condition.filter(event, context);

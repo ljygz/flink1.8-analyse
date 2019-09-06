@@ -379,14 +379,14 @@ public abstract class AbstractStreamOperator<OUT>
 	}
 
 
-//	获取快照到snapshotContext,
+//	task的每个operator都会调用，这里其实就是保存操作的状态方法，内容就是返回的OperatorSnapshotFutures对象，future对象会被启动起来
 	@Override
 	public final OperatorSnapshotFutures snapshotState(long checkpointId, long timestamp, CheckpointOptions checkpointOptions,
 			CheckpointStreamFactory factory) throws Exception {
 
 		KeyGroupRange keyGroupRange = null != keyedStateBackend ?
 				keyedStateBackend.getKeyGroupRange() : KeyGroupRange.EMPTY_KEY_GROUP_RANGE;
-
+//		这个future对象以后会被启动起来
 		OperatorSnapshotFutures snapshotInProgress = new OperatorSnapshotFutures();
 
 		try (StateSnapshotContextSynchronousImpl snapshotContext = new StateSnapshotContextSynchronousImpl(
@@ -398,6 +398,7 @@ public abstract class AbstractStreamOperator<OUT>
 
 			snapshotState(snapshotContext);
 
+//			获取keyState和operator的Future 后设置到快照中返回，用于保存到状态后端
 			snapshotInProgress.setKeyedStateRawFuture(snapshotContext.getKeyedStateStreamFuture());
 			snapshotInProgress.setOperatorStateRawFuture(snapshotContext.getOperatorStateStreamFuture());
 

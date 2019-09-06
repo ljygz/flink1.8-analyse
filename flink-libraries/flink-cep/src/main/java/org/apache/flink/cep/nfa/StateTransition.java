@@ -28,12 +28,15 @@ import java.util.Objects;
  *
  * @param <T> type of events that are handled by the {@link IterativeCondition}
  */
+//nfa中将正则表达式转换成图后的，顶点接着的边
+//	边包含了用户逻辑condition对象中filter方法返回是否能转换成这个状态
 public class StateTransition<T> implements Serializable {
 	private static final long serialVersionUID = -4825345749997891838L;
 
 	private final StateTransitionAction action;
 	private final State<T> sourceState;
-	private final State<T> targetState;
+//	因为我要修改所有去掉了final
+	private  State<T> targetState;
 	private IterativeCondition<T> condition;
 
 	public StateTransition(
@@ -53,6 +56,11 @@ public class StateTransition<T> implements Serializable {
 
 	public State<T> getTargetState() {
 		return targetState;
+	}
+
+//	这是自己的添加的逻辑修改边
+	public void setTargetState(State<T> input) {
+		 targetState = input;
 	}
 
 	public State<T> getSourceState() {

@@ -73,7 +73,11 @@ public class NFACompiler {
 			// return a factory for empty NFAs
 			return new NFAFactoryImpl<>(0, Collections.<State<T>>emptyList(), timeoutHandling);
 		} else {
+
+//			---其实想要通过pattern对象创建nfa.statue 那我就调用下面三个方法应该就创建好了所有nfa.statue而下面的timeoutHandling对象就是userOperator---
+//			这个地方就将所有的statue全部初始化，这个地方statue集合还为null
 			final NFAFactoryCompiler<T> nfaFactoryCompiler = new NFAFactoryCompiler<>(pattern);
+//			这个方法才将所有的statue以及其边都初始化了
 			nfaFactoryCompiler.compileFactory();
 			return new NFAFactoryImpl<>(nfaFactoryCompiler.getWindowTime(), nfaFactoryCompiler.getStates(), timeoutHandling);
 		}
@@ -569,6 +573,7 @@ public class NFACompiler {
 			return createSingletonState(
 				sinkState,
 				sinkState,
+//				这里获取了用户的逻辑filter
 				getTakeCondition(currentPattern),
 				getIgnoreCondition(currentPattern),
 				isPatternOptional(currentPattern));
@@ -598,6 +603,7 @@ public class NFACompiler {
 			final State<T> singletonState = createState(currentPattern.getName(), State.StateType.Normal);
 			// if event is accepted then all notPatterns previous to the optional states are no longer valid
 			final State<T> sink = copyWithoutTransitiveNots(sinkState);
+//			这个condition包含了用户的filter逻辑
 			singletonState.addTake(sink, takeCondition);
 
 			// if no element accepted the previous nots are still valid.
