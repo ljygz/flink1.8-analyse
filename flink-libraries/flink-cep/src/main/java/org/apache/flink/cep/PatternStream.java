@@ -24,6 +24,7 @@ import org.apache.flink.api.java.typeutils.EitherTypeInfo;
 import org.apache.flink.api.java.typeutils.TypeExtractor;
 import org.apache.flink.cep.functions.PatternProcessFunction;
 import org.apache.flink.cep.functions.TimedOutPartialMatchHandler;
+import org.apache.flink.cep.greelistern.CepListen;
 import org.apache.flink.cep.pattern.Pattern;
 import org.apache.flink.streaming.api.datastream.DataStream;
 import org.apache.flink.streaming.api.datastream.SingleOutputStreamOperator;
@@ -49,6 +50,15 @@ import static org.apache.flink.util.Preconditions.checkNotNull;
  * @param <T> Type of the events
  */
 public class PatternStream<T> {
+//	---------------自己加的方法
+	private Boolean hasListen = false;
+	private CepListen<T> cepListen = null;
+	public  PatternStream<T> registerListen(CepListen<T> cepListen){
+		this.cepListen = cepListen;
+		hasListen = true;
+		return this;
+	}
+//	---------------
 
 	private final PatternStreamBuilder<T> builder;
 
@@ -155,15 +165,22 @@ public class PatternStream<T> {
 	 * @return {@link DataStream} which contains the resulting elements from the pattern select
 	 *         function.
 	 */
+//	将client端注入的逻辑添加到这里的processFunction就可以了
 	public <R> SingleOutputStreamOperator<R> select(
 			final PatternSelectFunction<T, R> patternSelectFunction,
 			final TypeInformation<R> outTypeInfo) {
 
-//		这个对象会被序列化往网络发送，其实就是后面的cepOperator
+//		这个对象会被序列化往网络发送，其实就是后面的cepOperator，在这里实现PatternProcessFunction的两个新方法，将client的逻辑注入进来
 		final PatternProcessFunction<T, R> processFunction =
 			//这个方法包含生成operator的逻辑
 			fromSelect(builder.clean(patternSelectFunction)).build();
 //    这个方法会创建真正的nfafactory包含nfa.statue
+//	  先判断client端是否register了,然后就注入进去了
+//		------------
+		if (hasListen){
+			processFunction.registerListening(cepListen);
+		}
+//		------------
 		return process(processFunction, outTypeInfo);
 	}
 

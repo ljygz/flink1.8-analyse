@@ -40,7 +40,9 @@ import org.apache.flink.cep.nfa.aftermatch.AfterMatchSkipStrategy;
 import org.apache.flink.cep.nfa.compiler.NFACompiler;
 import org.apache.flink.cep.nfa.sharedbuffer.SharedBuffer;
 import org.apache.flink.cep.nfa.sharedbuffer.SharedBufferAccessor;
+import org.apache.flink.cep.pattern.Pattern;
 import org.apache.flink.cep.pattern.conditions.IterativeCondition;
+import org.apache.flink.cep.pattern.conditions.RichIterativeCondition;
 import org.apache.flink.cep.time.TimerService;
 import org.apache.flink.configuration.Configuration;
 import org.apache.flink.runtime.state.KeyedStateFunction;
@@ -55,6 +57,7 @@ import org.apache.flink.streaming.api.operators.OneInputStreamOperator;
 import org.apache.flink.streaming.api.operators.Output;
 import org.apache.flink.streaming.api.operators.TimestampedCollector;
 import org.apache.flink.streaming.api.operators.Triggerable;
+import org.apache.flink.streaming.api.windowing.time.Time;
 import org.apache.flink.streaming.runtime.streamrecord.StreamRecord;
 import org.apache.flink.streaming.runtime.tasks.StreamTask;
 import org.apache.flink.util.OutputTag;
@@ -215,7 +218,7 @@ public class CepOperator<IN, KEY, OUT>
 				"watermark-callbacks",
 				VoidNamespaceSerializer.INSTANCE,
 				this);
-//		创建nfa 初始化了所有的顶点statue 和边transition
+//		创建nfa 初始化了所有的顶点statue 和边transition,这个时候的state集合已经初始化完成了
 		nfa = nfaFactory.createNFA();
 //		这个地方为所有的边transition设置了cepRuntimeContext
 		nfa.open(cepRuntimeContext, new Configuration());
@@ -235,38 +238,79 @@ public class CepOperator<IN, KEY, OUT>
 
 	@Override
 	public void processElement(StreamRecord<IN> element) throws Exception {
+		NFAState mnfaState = getNFAState();
+//		获取用户对象
+		PatternProcessFunction<IN, OUT> userFunction = this.userFunction;
+//		根据用户对象获取pattern,先判断是否有监听
+		Pattern pattern ;
+		if ( userFunction.getFlagNeedListern() ){
+//			判断是否需要更新逻辑
+			if (userFunction.Needchange(element.getValue())){
+				pattern = userFunction.getNewPattern();
+//				这样创建但是context好像没有被扔进nfa.state的边的condition
+				NFACompiler.NFAFactoryCompiler<IN> nfaFactoryCompiler = new NFACompiler.NFAFactoryCompiler<IN>((Pattern<IN,?>)pattern);
+				nfaFactoryCompiler.compileFactory();
+				NFACompiler.NFAFactoryImpl<IN> nfaFactory = new NFACompiler.NFAFactoryImpl<>(nfaFactoryCompiler.getWindowTime(), nfaFactoryCompiler.getStates(), false);
+//		   		得到工厂的nfa
+				NFA<IN> newNfa = nfaFactory.createNFA();
+//				这个地方为所有的边transition设置了cepRuntimeContext
+				newNfa.open(cepRuntimeContext, new Configuration());
+//				覆盖
+				nfa.states = newNfa.states;
+//				将原来的为匹配完全的状态清理
+//				这里PartialMatches不能全清!必须要包含一个开始start,不然就再也匹配不上上了(所以初始化的时候遍历所有的start状态作为下一个可能匹配上的状态放了进去)
+				//		将原来的为匹配完全的状态清理
+				NFAState nfaState = getNFAState();
+				Queue<ComputationState> partialMatches = nfaState.getPartialMatches();
+				partialMatches.clear();
+//		因为nfaState中的partialMatches为未匹配完成的下一个状态，但是初始化的时候就是所有的start状态，所以
+//		这里需要根据新逻辑初始化一个新的NFAstate，里面的partialMatches设置为新逻辑中可能作为start的所有作为
+//		下一个可匹配状态选择
+				Queue<ComputationState> startingStates = new LinkedList<>();
+				for (State<IN> state : nfa.states.values()) {
+					if (state.isStart()) {
+//				        这里创建了一个start状态，通过所有state中可以一开始就作为start状态顶点的名字
+						startingStates.add(ComputationState.createStartState(state.getName()));
+					}
+				}
+				for (ComputationState startingState : startingStates) {
+//					将所有的state中开始状态作为下一个可能匹配状态放到NFAstate的partialMatches中
+					partialMatches.add(startingState);
+				}
 
-//		PatternSelectAdapter myclass = (PatternSelectAdapter) this.userFunction;
+			}
+		}
+//		PatternSelectAdapter myclass = (PatternSelectAdapter)
 //		myclass.helloFlink();
 //		修改想从中注入cep逻辑 ，通过修改nfa中的states
-		Map<String, State<IN>> states = nfa.states;
-		State<IN> endState = states.get("$endState$");
-		State<IN> secound = states.get("secound");
-		StateTransition<IN> next = secound.stateTransitions.iterator().next();
-		next.setCondition(new IterativeCondition<IN>() {
-			@Override
-			public boolean filter(IN value, Context<IN> ctx) throws Exception {
-				Tuple3<String, Long, String> value1 = (Tuple3<String, Long, String>) value;
-				return value1.f0.equals("b");
-			}
-		});
-//////		我新添加的逻辑
-		State<IN> mylj = new State<>("MYLJ", State.StateType.Normal);
-		mylj.addTake(endState, new IterativeCondition<IN>() {
-			@Override
-			public boolean filter(IN value, Context<IN> ctx) throws Exception {
-				Tuple3<String, Long, String> value1 = (Tuple3<String, Long, String>) value;
-				return value1.f0.equals("c");
-			}
-		});
-		HashMap<String, State<IN>> newh = new HashMap<>();
-		newh.putAll(states);
-		newh.put("MYLJ",mylj);
-//		next是secound的边
-		State<IN> disan = next.getTargetState();
-		next.setTargetState(mylj);
-		Collection<StateTransition<IN>> stateTransitions = mylj.getStateTransitions();
-		nfa.states = newh;
+//		Map<String, State<IN>> states = nfa.states;
+//		State<IN> endState = states.get("$endState$");
+//		State<IN> secound = states.get("secound");
+//		StateTransition<IN> next = secound.stateTransitions.iterator().next();
+//		next.setCondition(new IterativeCondition<IN>() {
+//			@Override
+//			public boolean filter(IN value, Context<IN> ctx) throws Exception {
+//				Tuple3<String, Long, String> value1 = (Tuple3<String, Long, String>) value;
+//				return value1.f0.equals("b");
+//			}
+//		});
+////////		我新添加的逻辑
+//		State<IN> mylj = new State<>("MYLJ", State.StateType.Normal);
+//		mylj.addTake(endState, new IterativeCondition<IN>() {
+//			@Override
+//			public boolean filter(IN value, Context<IN> ctx) throws Exception {
+//				Tuple3<String, Long, String> value1 = (Tuple3<String, Long, String>) value;
+//				return value1.f0.equals("c");
+//			}
+//		});
+//		HashMap<String, State<IN>> newh = new HashMap<>();
+//		newh.putAll(states);
+//		newh.put("MYLJ",mylj);
+////		next是secound的边
+//		State<IN> disan = next.getTargetState();
+//		next.setTargetState(mylj);
+//		Collection<StateTransition<IN>> stateTransitions = mylj.getStateTransitions();
+//		nfa.states = newh;
 //		------ 上面都是自己的逻辑 -----
 
 //		系统时间不用排序
@@ -276,6 +320,7 @@ public class CepOperator<IN, KEY, OUT>
 				NFAState nfaState = getNFAState();
 				long timestamp = getProcessingTimeService().getCurrentProcessingTime();
 				advanceTime(nfaState, timestamp);
+//				不用排序所有接收到数据直接就下面这个方法处理了
 				processEvent(nfaState, element.getValue(), timestamp);
 				updateNFA(nfaState);
 			} else {

@@ -20,6 +20,8 @@ package org.apache.flink.cep.functions;
 
 import org.apache.flink.annotation.PublicEvolving;
 import org.apache.flink.api.common.functions.AbstractRichFunction;
+import org.apache.flink.cep.greelistern.CepListen;
+import org.apache.flink.cep.pattern.Pattern;
 import org.apache.flink.cep.time.TimeContext;
 import org.apache.flink.util.Collector;
 import org.apache.flink.util.OutputTag;
@@ -40,9 +42,27 @@ import java.util.Map;
  * @param <IN> type of incoming elements
  * @param <OUT> type of produced elements based on found matches
  */
+//这个抽象类最后会在TM端cepoperator地方获取到，可以考虑在这里注入cepclient逻辑,添加方法传入一个自己实现的对象，
+// 																			 添加方法调用传入对象的指定方法生成pattern
 @PublicEvolving
 public abstract class PatternProcessFunction<IN, OUT> extends AbstractRichFunction {
-
+//	-----------------自己逻辑
+	private Boolean flagNeedListern = false;
+	public Boolean getFlagNeedListern() {
+		return flagNeedListern;
+	}
+	private CepListen<IN> listern = null;
+	public void registerListening(CepListen<IN> listern){
+		flagNeedListern = true;
+		this.listern = listern;
+	}
+	public Pattern getNewPattern(){
+		return listern.returnPattern();
+	}
+	public Boolean Needchange(IN element){
+		return listern.needChange(element);
+	}
+//	----------------------完成
 	/**
 	 * Generates resulting elements given a map of detected pattern events. The events
 	 * are identified by their specified names.

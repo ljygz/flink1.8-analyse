@@ -40,7 +40,6 @@ under the License.
 		<!-- core dependencies -->
 
 		<!--想在代码中调用cep加入cep模块-->
-
 		<dependency>
 			<groupId>org.apache.flink</groupId>
 			<artifactId>flink-cep_2.11</artifactId>

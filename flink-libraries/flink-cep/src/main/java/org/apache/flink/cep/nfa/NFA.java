@@ -128,9 +128,11 @@ public class NFA<T> {
 	}
 
 	public NFAState createInitialNFAState() {
+//		这里初始化nfaState的时候会先遍历所有的state将所有可能成为state的全部加到nfastate的队列partialMatches中
 		Queue<ComputationState> startingStates = new LinkedList<>();
 		for (State<T> state : states.values()) {
 			if (state.isStart()) {
+//				这里创建了一个start状态
 				startingStates.add(ComputationState.createStartState(state.getName()));
 			}
 		}

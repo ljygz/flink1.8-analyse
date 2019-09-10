@@ -35,8 +35,15 @@ public class NFAState {
 	 * These are the "active" intermediate states that are waiting for new matching
 	 * events to transition to new valid states.
 	 */
-//	用于保存还未完成的局部匹配的优先队列
+//	用于保存还未完成的局部匹配的优先队列，这里面必须一直最后包含一个开始start的ComputationState
+//		！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！
+//		这里不是未匹配完成的状态
+//								而是
+//									当前下一个状态可以匹配上哪些状态ComputationState
+//									（数据来了以后就只会在这里面找，能不能匹配上，匹配上了就证明这条数据属于上一条数据的下一个状态中的一种）
+//		所以NFAstate初始化的时候，会遍历所有的state,将里面所有可以作为start的state创建成ComputationState放到partialMatches中，用于初始匹配
 	private Queue<ComputationState> partialMatches;
+
 //	用于保存已完成的匹配优先队列
 	private Queue<ComputationState> completedMatches;
 

@@ -74,7 +74,7 @@ public class NFACompiler {
 			return new NFAFactoryImpl<>(0, Collections.<State<T>>emptyList(), timeoutHandling);
 		} else {
 
-//			---其实想要通过pattern对象创建nfa.statue 那我就调用下面三个方法应该就创建好了所有nfa.statue而下面的timeoutHandling对象就是userOperator---
+//			---其实想要通过pattern对象创建nfa.statue 那我就调用下面三个方法应该就创建好了所有nfa.statue---
 //			这个地方就将所有的statue全部初始化，这个地方statue集合还为null
 			final NFAFactoryCompiler<T> nfaFactoryCompiler = new NFAFactoryCompiler<>(pattern);
 //			这个方法才将所有的statue以及其边都初始化了
@@ -127,7 +127,8 @@ public class NFACompiler {
 	 *
 	 * @param <T>
 	 */
-	static class NFAFactoryCompiler<T> {
+//	因为我们想获取这个类所以先猥琐的default->public
+	public static class NFAFactoryCompiler<T> {
 
 		private final NFAStateNameHandler stateNameHandler = new NFAStateNameHandler();
 		private final Map<String, State<T>> stopStates = new HashMap<>();
@@ -140,8 +141,8 @@ public class NFACompiler {
 		private Pattern<T, ?> followingPattern;
 		private final AfterMatchSkipStrategy afterMatchSkipStrategy;
 		private Map<String, State<T>> originalStateMap = new HashMap<>();
-
-		NFAFactoryCompiler(final Pattern<T, ?> pattern) {
+		//	因为我们想获取这个类所以先猥琐的default->public
+		public NFAFactoryCompiler(final Pattern<T, ?> pattern) {
 			this.currentPattern = pattern;
 			afterMatchSkipStrategy = pattern.getAfterMatchSkipStrategy();
 		}
@@ -150,7 +151,8 @@ public class NFACompiler {
 		 * Compiles the given pattern into a {@link NFAFactory}. The NFA factory can be used to create
 		 * multiple NFAs.
 		 */
-		void compileFactory() {
+		//	因为我们想获取这个类所以先猥琐的private->public
+		public void compileFactory() {
 			if (currentPattern.getQuantifier().getConsumingStrategy() == Quantifier.ConsumingStrategy.NOT_FOLLOW) {
 				throw new MalformedPatternException("NotFollowedBy is not supported as a last part of a Pattern!");
 			}
@@ -170,12 +172,13 @@ public class NFACompiler {
 		AfterMatchSkipStrategy getAfterMatchSkipStrategy(){
 			return afterMatchSkipStrategy;
 		}
-
-		List<State<T>> getStates() {
+		//	因为我们想获取这个类所以先猥琐的default->public
+		public List<State<T>> getStates() {
 			return states;
 		}
 
-		long getWindowTime() {
+		//	因为我们想获取这个类所以先猥琐的default->public
+		public long getWindowTime() {
 			return windowTime;
 		}
 
@@ -924,15 +927,16 @@ public class NFACompiler {
 	 *
 	 * @param <T> Type of the input events which are processed by the NFA
 	 */
-	private static class NFAFactoryImpl<T> implements NFAFactory<T> {
+	//	因为我们想获取这个类所以先猥琐的default->public
+	public static class NFAFactoryImpl<T> implements NFAFactory<T> {
 
 		private static final long serialVersionUID = 8939783698296714379L;
 
 		private final long windowTime;
 		private final Collection<State<T>> states;
 		private final boolean timeoutHandling;
-
-		private NFAFactoryImpl(
+		//	因为我们想获取这个类所以先猥琐的private->public
+		public NFAFactoryImpl(
 				long windowTime,
 				Collection<State<T>> states,
 				boolean timeoutHandling) {

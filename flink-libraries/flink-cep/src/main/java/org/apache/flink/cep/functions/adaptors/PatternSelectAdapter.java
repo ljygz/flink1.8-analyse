@@ -40,11 +40,6 @@ public class PatternSelectAdapter<IN, OUT> extends PatternProcessFunction<IN, OU
 	private final PatternSelectFunction<IN, OUT> selectFunction;
 
 
-//	自己想在API中注入自己的逻辑，尝试添加方法留给用户实现
-	public void helloFlink(){
-		System.out.println("success");
-	}
-
 	public PatternSelectAdapter(final PatternSelectFunction<IN, OUT> selectFunction) {
 		this.selectFunction = checkNotNull(selectFunction);
 	}
