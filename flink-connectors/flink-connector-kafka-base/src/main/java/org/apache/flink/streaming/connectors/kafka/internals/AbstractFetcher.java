@@ -294,6 +294,7 @@ public abstract class AbstractFetcher<T, KPH> {
 		doCommitInternalOffsetsToKafka(filterOutSentinels(offsets), commitCallback);
 	}
 
+//	这个方法留给每个版本各自的kafka版本实现，提交偏移量到brock或zk
 	protected abstract void doCommitInternalOffsetsToKafka(
 			Map<KafkaTopicPartition, Long> offsets,
 			@Nonnull KafkaCommitCallback commitCallback) throws Exception;

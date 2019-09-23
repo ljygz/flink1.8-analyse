@@ -101,6 +101,7 @@ class PatternProcessFunctionBuilder {
 	/**
 	 * Wraps {@link PatternSelectFunction} in a builder. The builder can construct a
 	 * {@link PatternProcessFunction} adapter.
+	 * 不带timeout时间的select
 	 */
 	static class SelectBuilder<IN, OUT> {
 
@@ -126,6 +127,7 @@ class PatternProcessFunctionBuilder {
 	 * Wraps {@link PatternSelectFunction} and {@link PatternTimeoutFunction} in a builder. The builder will create a
 	 * {@link PatternProcessFunction} adapter that handles timed out partial matches as well.
 	 */
+//		带timeout的select
 	static class TimeoutSelectBuilder<IN, OUT, TIMED_OUT> {
 		private final PatternSelectFunction<IN, OUT> selectFunction;
 

@@ -146,6 +146,7 @@ public class CepOperator<IN, KEY, OUT>
 			@Nullable final AfterMatchSkipStrategy afterMatchSkipStrategy,
 			final PatternProcessFunction<IN, OUT> function,
 			@Nullable final OutputTag<IN> lateDataOutputTag) {
+//		这里实例初始化的时候会把用户的function传入
 		super(function);
 
 		this.inputSerializer = Preconditions.checkNotNull(inputSerializer);
@@ -178,7 +179,7 @@ public class CepOperator<IN, KEY, OUT>
 			new ValueStateDescriptor<>(
 				NFA_STATE_NAME,
 				new NFAStateSerializer()));
-
+// 这里初始化了一个共享缓存
 		partialMatches = new SharedBuffer<>(context.getKeyedStateStore(), inputSerializer);
 
 		elementQueueState = context.getKeyedStateStore().getMapState(
@@ -407,6 +408,7 @@ public class CepOperator<IN, KEY, OUT>
 		// STEP 2  只有数据按事件时间的优先队列里面的第一个元素事件时间小于当前水印就触发
 		while (!sortedTimestamps.isEmpty() && sortedTimestamps.peek() <= timerService.currentWatermark()) {
 			long timestamp = sortedTimestamps.poll();
+//			处理超时导致未匹配完的数据
 			advanceTime(nfaState, timestamp);
 			try (Stream<IN> elements = sort(elementQueueState.get(timestamp))) {
 				elements.forEachOrdered(
@@ -424,6 +426,7 @@ public class CepOperator<IN, KEY, OUT>
 		}
 
 		// STEP 3
+		//处理超时导致未匹配完的数据
 		advanceTime(nfaState, timerService.currentWatermark());
 
 		// STEP 4
@@ -482,6 +485,7 @@ public class CepOperator<IN, KEY, OUT>
 
 	private NFAState getNFAState() throws IOException {
 		NFAState nfaState = computationStates.value();
+//		为空,会初始化NFAstate,并将所有的start作为下一个可匹配状态
 		return nfaState != null ? nfaState : nfa.createInitialNFAState();
 	}
 
@@ -511,8 +515,11 @@ public class CepOperator<IN, KEY, OUT>
 	private void processEvent(NFAState nfaState, IN event, long timestamp)throws Exception {
 //		用于获取访问共享缓冲区的访问器，其中包含了一个sharedBuffer 的共享缓存，用于存储未匹配完成的事件
 		try (SharedBufferAccessor<IN> sharedBufferAccessor = partialMatches.getAccessor()) {
+//			得到匹配上的一个正则的一个map ，map中包含了这个正则的所有数据
 			Collection<Map<String, List<IN>>> patterns =
+//				真正处理
 				nfa.process(sharedBufferAccessor, nfaState, event, timestamp, afterMatchSkipStrategy, cepTimerService);
+//			这个map包含了匹配上的一个正则，下面会调用用户的select或者flatselect方法，往下游发送
 			processMatchedSequences(patterns, timestamp);
 		}
 	}
@@ -526,19 +533,22 @@ public class CepOperator<IN, KEY, OUT>
 			Collection<Tuple2<Map<String, List<IN>>, Long>> timedOut =
 					nfa.advanceTime(sharedBufferAccessor, nfaState, timestamp);
 			if (!timedOut.isEmpty()) {
+//				处理超时导致匹配到一半的数据
 				processTimedOutSequences(timedOut);
 			}
 		}
 	}
 
+//	匹配到的数据，调用用户的processMatch中select或flatselect往下游emit
 	private void processMatchedSequences(Iterable<Map<String, List<IN>>> matchingSequences, long timestamp) throws Exception {
 		PatternProcessFunction<IN, OUT> function = getUserFunction();
 		setTimestamp(timestamp);
 		for (Map<String, List<IN>> matchingSequence : matchingSequences) {
+//			这个方法调用用户的select或者flatselect方法，往下游发送
 			function.processMatch(matchingSequence, context, collector);
 		}
 	}
-
+//  这里是执行带timeout的select或flatselect，用于当匹配因为超时而匹配了部分会走这个逻辑调用用户select中传入的方法
 	private void processTimedOutSequences(Collection<Tuple2<Map<String, List<IN>>, Long>> timedOutSequences) throws Exception {
 		PatternProcessFunction<IN, OUT> function = getUserFunction();
 		if (function instanceof TimedOutPartialMatchHandler) {
@@ -548,6 +558,7 @@ public class CepOperator<IN, KEY, OUT>
 
 			for (Tuple2<Map<String, List<IN>>, Long> matchingSequence : timedOutSequences) {
 				setTimestamp(matchingSequence.f1);
+//				调用用户的select中方法处理超时导致只部分匹配的数据
 				timeoutHandler.processTimedOutMatch(matchingSequence.f0, context);
 			}
 		}

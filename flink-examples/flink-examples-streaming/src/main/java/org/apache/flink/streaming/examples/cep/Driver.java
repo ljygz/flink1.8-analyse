@@ -7,6 +7,7 @@ import org.apache.flink.api.java.tuple.Tuple3;
 import org.apache.flink.api.java.typeutils.runtime.kryo.KryoSerializer;
 import org.apache.flink.cep.CEP;
 import org.apache.flink.cep.PatternStream;
+import org.apache.flink.cep.PatternTimeoutFunction;
 import org.apache.flink.cep.RichPatternSelectFunction;
 import org.apache.flink.cep.greelistern.CepListen;
 import org.apache.flink.cep.pattern.Pattern;
@@ -37,9 +38,9 @@ public class Driver {
 			, new Tuple3<String, Long, String>("b", 1000000002000L, "23")
 			, new Tuple3<String, Long, String>("c", 1000000003000L, "23")
 			, new Tuple3<String, Long, String>("d", 1000000003000L, "23")
-			, new Tuple3<String, Long, String>("a", 1000000004000L, "24")
-			, new Tuple3<String, Long, String>("a", 1000000005000L, "23")
-			, new Tuple3<String, Long, String>("f", 1000000006000L, "23")
+			, new Tuple3<String, Long, String>("e", 1000000004000L, "24")
+			, new Tuple3<String, Long, String>("b", 1000000005000L, "23")
+			, new Tuple3<String, Long, String>("g", 1000000006000L, "23")
 		).assignTimestampsAndWatermarks(new AssignerWithPunctuatedWatermarks<Tuple3<String, Long, String>>() {
 			long maxTimsStamp;
 
@@ -65,7 +66,7 @@ public class Driver {
 					return value.f0.equals("a");
 				}
 			})
-			.next("secound").where(new RichIterativeCondition<Tuple3<String, Long, String>>() {
+			.followedBy("secound").where(new RichIterativeCondition<Tuple3<String, Long, String>>() {
 				@Override
 				public boolean filter(Tuple3<String, Long, String> value, Context<Tuple3<String, Long, String>> ctx) throws Exception {
 					return value.f0.equals("b");
@@ -112,6 +113,8 @@ public class Driver {
 			});
 
 		patternstream
+//			这里也可以加上一个timeoutFunction用于处理匹配因为超时而没有匹配上的一个正则。（如果中途直接没有匹配上就删这里是一直匹配但超时了还未匹配完整）
+//			.select(new PatternTimeoutFunction(),new RichPatternSelectFunction)
 			.select(new RichPatternSelectFunction<Tuple3<String, Long, String>,Tuple3<String,String,String>>() {
 			@Override
 			public Tuple3 select(Map pattern) throws Exception {

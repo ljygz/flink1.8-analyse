@@ -58,6 +58,7 @@ public class PatternFlatSelectAdapter<IN, OUT> extends PatternProcessFunction<IN
 			final Map<String, List<IN>> match,
 			final Context ctx,
 			final Collector<OUT> out) throws Exception {
+//		就是说我一个匹配上的正则可以返回多个下游数据，往下发送
 		flatSelectFunction.flatSelect(match, out);
 	}
 }

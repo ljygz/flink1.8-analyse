@@ -493,6 +493,8 @@ public final class InstantiationUtil {
 	}
 
 	public static <T> T readObjectFromConfig(Configuration config, String key, ClassLoader cl) throws IOException, ClassNotFoundException {
+//		这里其实已经拿到了二进制class,可以通过类加载器加载成类了，这里就是我们的头算子streamOperator
+//		这里居然比invoke方法还先调用，这里会将来自用户的operator对象的类用过二进制流，用类加载器加载
 		byte[] bytes = config.getBytes(key, null);
 		if (bytes == null) {
 			return null;

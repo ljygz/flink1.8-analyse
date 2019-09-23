@@ -51,5 +51,6 @@ public interface PatternSelectFunction<IN, OUT> extends Function, Serializable {
 	 * @throws Exception This method may throw exceptions. Throwing an exception will cause the
 	 * 					 operation to fail and may trigger recovery.
 	 */
+//	这个select方法就是留给用户调用的，每个匹配的正则返回一个值作为结果而flatmap则返回多个
 	OUT select(Map<String, List<IN>> pattern) throws Exception;
 }

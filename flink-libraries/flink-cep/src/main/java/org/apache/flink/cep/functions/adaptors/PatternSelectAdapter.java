@@ -60,6 +60,7 @@ public class PatternSelectAdapter<IN, OUT> extends PatternProcessFunction<IN, OU
 			final Map<String, List<IN>> match,
 			final Context ctx,
 			final Collector<OUT> out) throws Exception {
+//		往下游发送
 		out.collect(selectFunction.select(match));
 	}
 }

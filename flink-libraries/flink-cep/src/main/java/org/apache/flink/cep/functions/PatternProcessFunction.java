@@ -43,7 +43,8 @@ import java.util.Map;
  * @param <OUT> type of produced elements based on found matches
  */
 //这个抽象类最后会在TM端cepoperator地方获取到，可以考虑在这里注入cepclient逻辑,添加方法传入一个自己实现的对象，
-// 																			 添加方法调用传入对象的指定方法生成pattern
+//  添加方法调用传入对象的指定方法生成pattern
+//	有两个适配器类 select，flatselect 分别对应一个匹配向下游发送一个数据还是多个
 @PublicEvolving
 public abstract class PatternProcessFunction<IN, OUT> extends AbstractRichFunction {
 //	-----------------自己逻辑
@@ -76,6 +77,8 @@ public abstract class PatternProcessFunction<IN, OUT> extends AbstractRichFuncti
 	 * @throws Exception This method may throw exceptions. Throwing an exception will cause the
 	 *                   operation to fail and may trigger recovery.
 	 */
+//	这个方法会调用用户的select或者flatselect对应了一个匹配会返回一个结果还是多个，根自己的适配器类是
+//	flatselect还是select有关
 	public abstract void processMatch(
 		final Map<String, List<IN>> match,
 		final Context ctx,

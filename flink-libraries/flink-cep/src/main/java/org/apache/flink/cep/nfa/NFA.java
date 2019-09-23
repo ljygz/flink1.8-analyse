@@ -127,6 +127,8 @@ public class NFA<T> {
 		return states.values();
 	}
 
+
+//	这里会初始化NFAstate,将start放到partialMatches中，用于初始匹配.Begin()
 	public NFAState createInitialNFAState() {
 //		这里初始化nfaState的时候会先遍历所有的state将所有可能成为state的全部加到nfastate的队列partialMatches中
 		Queue<ComputationState> startingStates = new LinkedList<>();
@@ -254,6 +256,8 @@ public class NFA<T> {
 		final PriorityQueue<ComputationState> newPartialMatches = new PriorityQueue<>(NFAState.COMPUTATION_STATE_COMPARATOR);
 
 		for (ComputationState computationState : nfaState.getPartialMatches()) {
+//			当超过用户指定的within时间就会，有针对超时处理的方法时，就会加入到因为超时而未匹配完的队列里面去，到时候会调用
+//			用户select方法中注册的超时处理方法类似于map去处理这些匹配一半因为超时而匹配失败的数据
 			if (isStateTimedOut(computationState, timestamp)) {
 
 				if (handleTimeout) {

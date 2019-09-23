@@ -904,6 +904,7 @@ public abstract class FlinkKafkaConsumerBase<T> extends RichParallelSourceFuncti
 					pendingOffsetsToCommit.put(context.getCheckpointId(), restoredState);
 				}
 			} else {
+//				这个地方获取了所有分区消费到的偏移量offset
 				HashMap<KafkaTopicPartition, Long> currentOffsets = fetcher.snapshotCurrentState();
 
 				if (offsetCommitMode == OffsetCommitMode.ON_CHECKPOINTS) {
@@ -966,7 +967,8 @@ public abstract class FlinkKafkaConsumerBase<T> extends RichParallelSourceFuncti
 					LOG.debug("Checkpoint state was empty.");
 					return;
 				}
-
+				//这个方法每个版本各自的kafka版本实现，提交每个分区偏移量到brock或zk
+				//当提交方法是OffsetCommitMode#ON_CHECKPOINTS
 				fetcher.commitInternalOffsetsToKafka(offsets, offsetCommitCallback);
 			} catch (Exception e) {
 				if (running) {

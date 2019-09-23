@@ -187,6 +187,7 @@ public abstract class StreamTask<OUT, OP extends StreamOperator<OUT>>
 	 * @param env The task environment for this task.
 	 */
 	protected StreamTask(Environment env) {
+//		这个environment会包含用户类的类加载器
 		this(env, null);
 	}
 
@@ -264,7 +265,7 @@ public abstract class StreamTask<OUT, OP extends StreamOperator<OUT>>
 				timerService = new SystemProcessingTimeService(this, getCheckpointLock(), timerThreadFactory);
 			}
 
-//			创建chain 包含遍历所有的operator并为每个赋值output
+//			创建chain 包含遍历所有的operator并为每个赋值output，并且先拿到了用户的function
 			operatorChain = new OperatorChain<>(this, recordWriters);
 			headOperator = operatorChain.getHeadOperator();
 

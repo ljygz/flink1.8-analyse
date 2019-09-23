@@ -130,6 +130,7 @@ public class OperatorChain<OUT, OP extends StreamOperator<OUT>> implements Strea
 
 			// we create the chain of operators and grab the collector that leads into the chain
 			List<StreamOperator<?>> allOps = new ArrayList<>(chainedConfigs.size());
+//			这里会网allOps加入所有用户的非Head的StreamOperator,就是用户的逻辑对象OneInputStreamOperator
 			this.chainEntryPoint = createOutputCollector(
 				containingTask,
 				configuration,
@@ -148,6 +149,7 @@ public class OperatorChain<OUT, OP extends StreamOperator<OUT>> implements Strea
 			// add head operator to end of chain
 			allOps.add(headOperator);
 
+//			这里其实就已经得到了用户所有的streamOperator然后设置给了operatorChain中的operator数组
 			this.allOperators = allOps.toArray(new StreamOperator<?>[allOps.size()]);
 
 			success = true;
@@ -296,6 +298,7 @@ public class OperatorChain<OUT, OP extends StreamOperator<OUT>> implements Strea
 			int outputId = outputEdge.getTargetId();
 			StreamConfig chainedOpConfig = chainedConfigs.get(outputId);
 //			创建operator并为operator设置output，最后放入streamTask的operater[]中
+//			获取用户operator
 			WatermarkGaugeExposingOutput<StreamRecord<T>> output = createChainedOperator(
 				containingTask,
 				chainedOpConfig,
@@ -363,6 +366,7 @@ public class OperatorChain<OUT, OP extends StreamOperator<OUT>> implements Strea
 		// create the output that the operator writes to first. this may recursively create more operators
 //		得到对应operater 的output
 //		会一直循环下去直到chain的opearator全部创建完成然后在递归上去设置其ouput
+//		!!!!!!这里allOperators的创建，是一个循环，这里会频繁的调用
 		WatermarkGaugeExposingOutput<StreamRecord<OUT>> chainedOperatorOutput = createOutputCollector(
 			containingTask,
 			operatorConfig,

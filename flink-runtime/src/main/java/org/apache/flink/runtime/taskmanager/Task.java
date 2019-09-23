@@ -589,7 +589,7 @@ public class Task implements Runnable, TaskActions, CheckpointListener {
 			// first of all, get a user-code classloader
 			// this may involve downloading the job's JAR files and/or classes
 			LOG.info("Loading JAR files for task {}.", this);
-
+//			创建包含用户逻辑的类加载器
 			userCodeClassLoader = createUserCodeClassloader();
 			final ExecutionConfig executionConfig = serializedExecutionConfig.deserializeValue(userCodeClassLoader);
 
@@ -664,7 +664,7 @@ public class Task implements Runnable, TaskActions, CheckpointListener {
 			// ----------------------------------------------------------------
 
 			TaskKvStateRegistry kvStateRegistry = network.createKvStateTaskRegistry(jobId, getJobVertexId());
-
+//			创建env 里面会传入包含用户类的类加载器
 			Environment env = new RuntimeEnvironment(
 				jobId,
 				vertexId,
@@ -692,6 +692,7 @@ public class Task implements Runnable, TaskActions, CheckpointListener {
 				this);
 
 			// now load and instantiate the task's invokable code
+//			这里把这个env对象传递进去了，这个env对象包含用户类的类加载器
 			invokable = loadAndInstantiateInvokable(userCodeClassLoader, nameOfInvokableClass, env);
 
 			// ----------------------------------------------------------------
