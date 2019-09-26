@@ -429,6 +429,7 @@ public class RocksDBKeyedStateBackend<K> extends AbstractKeyedStateBackend<K> {
 				savepointSnapshotStrategy : checkpointSnapshotStrategy;
 
 		RunnableFuture<SnapshotResult<KeyedStateHandle>> snapshotRunner =
+//			生成具体异步线程将状态数据保存到checkpoint地址
 			chosenSnapshotStrategy.snapshot(checkpointId, timestamp, streamFactory, checkpointOptions);
 
 		chosenSnapshotStrategy.logSyncCompleted(streamFactory, startTime);

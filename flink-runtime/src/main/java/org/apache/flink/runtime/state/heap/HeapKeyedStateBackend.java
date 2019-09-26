@@ -297,6 +297,7 @@ public class HeapKeyedStateBackend<K> extends AbstractKeyedStateBackend<K> {
 		long startTime = System.currentTimeMillis();
 
 		final RunnableFuture<SnapshotResult<KeyedStateHandle>> snapshotRunner =
+			//生成具体异步线程将状态数据保存到checkpoint地址
 			snapshotStrategy.snapshot(checkpointId, timestamp, streamFactory, checkpointOptions);
 
 		snapshotStrategy.logSyncCompleted(streamFactory, startTime);

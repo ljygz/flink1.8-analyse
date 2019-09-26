@@ -379,14 +379,14 @@ public abstract class AbstractStreamOperator<OUT>
 	}
 
 
-//	task的每个operator都会调用，这里其实就是保存操作的状态方法，内容就是返回的OperatorSnapshotFutures对象，future对象会被启动起来
+//	task的每个operator都会调用，这里其实就是保存操作的状态方法，就是返回的OperatorSnapshotFutures对象
 	@Override
 	public final OperatorSnapshotFutures snapshotState(long checkpointId, long timestamp, CheckpointOptions checkpointOptions,
 			CheckpointStreamFactory factory) throws Exception {
 
 		KeyGroupRange keyGroupRange = null != keyedStateBackend ?
 				keyedStateBackend.getKeyGroupRange() : KeyGroupRange.EMPTY_KEY_GROUP_RANGE;
-//		这个future对象以后会被启动起来
+//		这个future对象以后会被启动起来，这里所有都是空的，下面通过set赋值
 		OperatorSnapshotFutures snapshotInProgress = new OperatorSnapshotFutures();
 
 		try (StateSnapshotContextSynchronousImpl snapshotContext = new StateSnapshotContextSynchronousImpl(
@@ -398,17 +398,30 @@ public abstract class AbstractStreamOperator<OUT>
 
 			snapshotState(snapshotContext);
 
-//			获取keyState和operator的Future 后设置到快照中返回，用于保存到状态后端
+//			设置keyState和operator的Future用于保存到状态后端
+//			不包含真正逻辑（状态后端保存到checkpoint的逻辑）这种什么raw原生的future一般都是空的
 			snapshotInProgress.setKeyedStateRawFuture(snapshotContext.getKeyedStateStreamFuture());
 			snapshotInProgress.setOperatorStateRawFuture(snapshotContext.getOperatorStateStreamFuture());
 
 			if (null != operatorStateBackend) {
 				snapshotInProgress.setOperatorStateManagedFuture(
+//					！！！！！这里才是真正写状态后端到checkpoint的逻辑
+//					通过这个工厂创建流！将状态后端的数据写入checkpoint地址！工厂分为
+//							1.fs  对应文件系统 本地或hdfs
+//							2.memory  对应memory的状态后端方法,cp也是存在内存
+//					这里面其实是会通过一个包含具体逻辑的callable返回future
+// 					这里返回的future对象里面的callable对象是真正的存储状态的逻辑
 					operatorStateBackend.snapshot(checkpointId, timestamp, factory, checkpointOptions));
 			}
 
 			if (null != keyedStateBackend) {
 				snapshotInProgress.setKeyedStateManagedFuture(
+//					！！！！！这里才是真正写状态后端到checkpoint的逻辑
+//					通过这个工厂创建流！将状态后端的数据写入checkpoint地址！工厂分为
+//							1.fs  对应文件系统 本地或hdfs
+//							2.memory  对应memory的状态后端方法,cp也是存在内存
+//					这里面其实是会通过一个包含具体逻辑的callable返回future
+// 					这里返回的future对象里面的callable对象是真正的存储状态的逻辑
 					keyedStateBackend.snapshot(checkpointId, timestamp, factory, checkpointOptions));
 			}
 		} catch (Exception snapshotException) {

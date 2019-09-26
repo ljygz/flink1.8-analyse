@@ -46,6 +46,7 @@ public class OperatorSnapshotFutures {
 	@Nonnull
 	private RunnableFuture<SnapshotResult<OperatorStateHandle>> operatorStateRawFuture;
 
+//	一开始设置为空，后面通过set方法设置进去
 	public OperatorSnapshotFutures() {
 		this(
 			DoneFuture.of(SnapshotResult.empty()),

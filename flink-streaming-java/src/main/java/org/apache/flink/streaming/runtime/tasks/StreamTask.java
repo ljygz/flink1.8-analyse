@@ -583,6 +583,7 @@ public abstract class StreamTask<OUT, OP extends StreamOperator<OUT>>
 		}
 	}
 
+//	这个是第二个task接收到barriers对齐后触发，第一个task直接接coordinator接到CP的rpc直接就触发了
 //	当barrier到齐时触发checkpoint，并保存task所有operator的状态
 	@Override
 	public void triggerCheckpointOnBarrier(
@@ -638,11 +639,11 @@ public abstract class StreamTask<OUT, OP extends StreamOperator<OUT>>
 
 				// Step (1): Prepare the checkpoint, allow operators to do some pre-barrier work.
 				//           The pre-barrier work should be nothing or minimal in the common case.
-//				准备往下游发的barrier
+//				准备阶段
 				operatorChain.prepareSnapshotPreBarrier(checkpointMetaData.getCheckpointId());
 
 				// Step (2): Send the checkpoint barrier downstream
-//				发
+//				广播发
 				operatorChain.broadcastCheckpointBarrier(
 						checkpointMetaData.getCheckpointId(),
 						checkpointMetaData.getTimestamp(),
@@ -652,6 +653,7 @@ public abstract class StreamTask<OUT, OP extends StreamOperator<OUT>>
 				//           impact progress of the streaming topology
 
 //				这个地方触发保存快照 每个operater的操作！！！！！！！！！！！到状态后端并且通知jobmanager
+//				里面是一个异步处理保存状态后端的数据到checkpoint地址的异步线程
 				checkpointState(checkpointMetaData, checkpointOptions, checkpointMetrics);
 				return true;
 			}
@@ -868,7 +870,7 @@ public abstract class StreamTask<OUT, OP extends StreamOperator<OUT>>
 
 					// finalize the async part of all by executing all snapshot runnables
 					OperatorSnapshotFinalizer finalizedSnapshots =
-//						这里启动了所有的future
+//						这里启动了所有的future,并返回执行结果
 						new OperatorSnapshotFinalizer(snapshotInProgress);
 
 					jobManagerTaskOperatorSubtaskStates.putSubtaskStateByOperatorID(
@@ -887,9 +889,10 @@ public abstract class StreamTask<OUT, OP extends StreamOperator<OUT>>
 
 				checkpointMetrics.setAsyncDurationMillis(asyncDurationMillis);
 
+//				这里cas修改cp状态当完成时，会通知jobmanager相应已经完成checkpoint
 				if (asyncCheckpointState.compareAndSet(CheckpointingOperation.AsyncCheckpointState.RUNNING,
 					CheckpointingOperation.AsyncCheckpointState.COMPLETED)) {
-
+//					这里就是调用jobmanager的完成CP的ack的RPC方法
 					reportCompletedSnapshotStates(
 						jobManagerTaskOperatorSubtaskStates,
 						localTaskOperatorSubtaskStates,
@@ -1072,9 +1075,12 @@ public abstract class StreamTask<OUT, OP extends StreamOperator<OUT>>
 
 			try {
 				for (StreamOperator<?> op : allOperators) {
-//					遍历保存task中所有operater的状态创建future到map中！！！！这就是保存operator内状态的操作
-//					创建future到operatorSnapshotsInProgress里面!!!!!!future里面就是具体的逻辑，以后会全部被启动起来
-//			！！！！！！！！！！！！！
+//
+//					遍历调用所有operator的snapshotState方法，方法中包含了启动用于状态后端数据到checkpoint地址的两个callable线程，会被启动起来
+//					分别对应keystate和state
+//					返回一个对象（这个不是具体逻辑，但是里面包含了几种状态cp的异步存储callable具体逻辑得到的future对象）
+//					用于确定这两个callable是否存储完状态，每个operator一个OperatorSnapshotFutures,
+//					operator中的每种状态又用一个callable去异步写stream到checkpoint地址返回的future对象存储在map中的同一个operator
 					checkpointStreamOperator(op);
 				}
 
@@ -1088,8 +1094,7 @@ public abstract class StreamTask<OUT, OP extends StreamOperator<OUT>>
 				checkpointMetrics.setSyncDurationMillis((startAsyncPartNano - startSyncPartNano) / 1_000_000);
 
 				// we are transferring ownership over snapshotInProgressList for cleanup to the thread, active on submit
-//				异步线程用于保存状态 ,返回的其实是一个runnable对象，里面包含了所有operator的key,operator statu的future
-//				运行
+//
 				AsyncCheckpointRunnable asyncCheckpointRunnable = new AsyncCheckpointRunnable(
 					owner,
 					operatorSnapshotsInProgress,
@@ -1099,7 +1104,7 @@ public abstract class StreamTask<OUT, OP extends StreamOperator<OUT>>
 
 				owner.cancelables.registerCloseable(asyncCheckpointRunnable);
 
-//				这个future被submit了， 也就是说里面包含的那些future
+//				这个future被submit了，也就是说里面包含的那些future
 				owner.asyncOperationsThreadPool.submit(asyncCheckpointRunnable);
 
 				if (LOG.isDebugEnabled()) {
@@ -1136,13 +1141,13 @@ public abstract class StreamTask<OUT, OP extends StreamOperator<OUT>>
 		@SuppressWarnings("deprecation")
 		private void checkpointStreamOperator(StreamOperator<?> op) throws Exception {
 			if (null != op) {
-//				走到了operator的状态保存,返回的这个对象里面，包含了operator的获取keystatue,opeartorstatus的future
+//				触发每个operator保存状态的异步线程，返回的是，一个op所有的异步线程存储是否完成的future
 				OperatorSnapshotFutures snapshotInProgress = op.snapshotState(
 						checkpointMetaData.getCheckpointId(),
 						checkpointMetaData.getTimestamp(),
 						checkpointOptions,
 						storageLocation);
-//				把这些future全部放到map里面去了
+//				把这些future线程全部放到map里面去了
 				operatorSnapshotsInProgress.put(op.getOperatorID(), snapshotInProgress);
 			}
 		}

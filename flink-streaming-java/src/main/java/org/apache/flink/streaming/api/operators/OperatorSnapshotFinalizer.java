@@ -43,7 +43,8 @@ public class OperatorSnapshotFinalizer {
 	public OperatorSnapshotFinalizer(
 		@Nonnull OperatorSnapshotFutures snapshotFutures) throws ExecutionException, InterruptedException {
 
-//		这里就是异步future返回的结果了
+//		这里如果异步线程已经启动了就返回他的.get()
+//		没有启动就先启动.run()
 		SnapshotResult<KeyedStateHandle> keyedManaged =
 			FutureUtils.runIfNotDoneAndGet(snapshotFutures.getKeyedStateManagedFuture());
 

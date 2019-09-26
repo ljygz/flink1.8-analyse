@@ -184,7 +184,7 @@ public class BarrierTracker implements CheckpointBarrierHandler {
 					if (LOG.isDebugEnabled()) {
 						LOG.debug("Received all barriers for checkpoint {}", barrierId);
 					}
-
+//					触发checkpoint
 					notifyCheckpoint(receivedBarrier.getId(), receivedBarrier.getTimestamp(), receivedBarrier.getCheckpointOptions());
 				}
 			}

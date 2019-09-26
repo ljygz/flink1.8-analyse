@@ -122,6 +122,7 @@ public interface StreamOperator<OUT> extends CheckpointListener, KeyContext, Dis
 	 * @throws Exception exception that happened during snapshotting.
 	 */
 //	获得function或者operator的当前状态（快照），这个状态必须反映该function之前的变更所产生的最终结果
+//	并且返回一个异步将状态后端写入checkpoint地址的异步线程
 	OperatorSnapshotFutures snapshotState(
 		long checkpointId,
 		long timestamp,

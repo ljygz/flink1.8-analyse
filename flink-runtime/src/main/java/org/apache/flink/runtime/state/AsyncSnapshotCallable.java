@@ -142,6 +142,7 @@ public abstract class AsyncSnapshotCallable<T> implements Callable<T> {
 	 * This method implements the (async) snapshot logic. Resources aquired within this method should be released at
 	 * the end of the method.
 	 */
+//	这个方法留给不同的状态后端实现，实现将状态存储到状态后端的具体逻辑
 	protected abstract T callInternal() throws Exception;
 
 	/**

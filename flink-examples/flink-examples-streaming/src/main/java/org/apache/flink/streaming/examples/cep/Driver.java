@@ -34,12 +34,12 @@ public class Driver {
 		StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
 		env.setStreamTimeCharacteristic(TimeCharacteristic.EventTime);
 		SingleOutputStreamOperator<Tuple3<String, Long, String>> source = env.fromElements(
-			new Tuple3<String, Long, String>("a", 1000000001000L, "22")
+			  new Tuple3<String, Long, String>("a", 1000000001000L, "22")
 			, new Tuple3<String, Long, String>("b", 1000000002000L, "23")
 			, new Tuple3<String, Long, String>("c", 1000000003000L, "23")
 			, new Tuple3<String, Long, String>("d", 1000000003000L, "23")
 			, new Tuple3<String, Long, String>("e", 1000000004000L, "24")
-			, new Tuple3<String, Long, String>("b", 1000000005000L, "23")
+			, new Tuple3<String, Long, String>("f", 1000000005000L, "23")
 			, new Tuple3<String, Long, String>("g", 1000000006000L, "23")
 		).assignTimestampsAndWatermarks(new AssignerWithPunctuatedWatermarks<Tuple3<String, Long, String>>() {
 			long maxTimsStamp;
@@ -66,7 +66,7 @@ public class Driver {
 					return value.f0.equals("a");
 				}
 			})
-			.followedBy("secound").where(new RichIterativeCondition<Tuple3<String, Long, String>>() {
+			.next("secound").where(new RichIterativeCondition<Tuple3<String, Long, String>>() {
 				@Override
 				public boolean filter(Tuple3<String, Long, String> value, Context<Tuple3<String, Long, String>> ctx) throws Exception {
 					return value.f0.equals("b");
@@ -91,19 +91,19 @@ public class Driver {
 						.where(new RichIterativeCondition<Tuple3<String, Long, String>>() {
 							@Override
 							public boolean filter(Tuple3<String, Long, String> value, Context<Tuple3<String, Long, String>> ctx) throws Exception {
-								return value.f0.equals("a");
+								return value.f0.equals("e");
 							}
 						})
 						.next("secound").where(new RichIterativeCondition<Tuple3<String, Long, String>>() {
 							@Override
 							public boolean filter(Tuple3<String, Long, String> value, Context<Tuple3<String, Long, String>> ctx) throws Exception {
-								return value.f0.equals("a");
+								return value.f0.equals("f");
 							}
 						})
 						.next("next").where(new RichIterativeCondition<Tuple3<String, Long, String>>() {
 							@Override
 							public boolean filter(Tuple3<String, Long, String> value, Context<Tuple3<String, Long, String>> ctx) throws Exception {
-								return value.f0.equals("f");
+								return value.f0.equals("g");
 							}
 						})
 //			正则匹配的第一个元素的时间到最后一个元素的时间不能超过，这个时间

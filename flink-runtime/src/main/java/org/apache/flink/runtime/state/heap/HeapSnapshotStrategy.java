@@ -137,7 +137,7 @@ class HeapSnapshotStrategy<K>
 				getKeySerializer(),
 				metaInfoSnapshots,
 				!Objects.equals(UncompressedStreamCompressionDecorator.INSTANCE, keyGroupCompressionDecorator));
-
+//		根据传入的fatory创建对应写入checkpoint地址的流，用于后面创建的异步callable重写的callInternal方法中写入checkpoint地址数据
 		final SupplierWithException<CheckpointStreamWithResultProvider, Exception> checkpointStreamSupplier =
 
 			localRecoveryConfig.isLocalRecoveryEnabled() ?
@@ -153,7 +153,7 @@ class HeapSnapshotStrategy<K>
 					primaryStreamFactory);
 
 		//--------------------------------------------------- this becomes the end of sync part
-
+//		这里创建了一个callable异步线程对象(这个callable才是真正处理存储状态的逻辑，里面的call方法又会调用下面实现的callInternal)，但是还是没有起起来
 		final AsyncSnapshotCallable<SnapshotResult<KeyedStateHandle>> asyncSnapshotCallable =
 			new AsyncSnapshotCallable<SnapshotResult<KeyedStateHandle>>() {
 				@Override
@@ -218,6 +218,7 @@ class HeapSnapshotStrategy<K>
 				}
 			};
 
+//		返回Future对象，通过这个callable对象，里面包含了真正的状态储存到状态后端逻辑
 		final FutureTask<SnapshotResult<KeyedStateHandle>> task =
 			asyncSnapshotCallable.toAsyncSnapshotFutureTask(cancelStreamRegistry);
 		finalizeSnapshotBeforeReturnHook(task);

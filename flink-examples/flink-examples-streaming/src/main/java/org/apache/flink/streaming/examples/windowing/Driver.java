@@ -3,6 +3,7 @@ import org.apache.flink.api.common.functions.JoinFunction;
 import org.apache.flink.api.java.functions.KeySelector;
 import org.apache.flink.api.java.tuple.Tuple;
 import org.apache.flink.api.java.tuple.Tuple3;
+import org.apache.flink.runtime.state.memory.MemoryStateBackend;
 import org.apache.flink.streaming.api.TimeCharacteristic;
 import org.apache.flink.streaming.api.datastream.AsyncDataStream;
 import org.apache.flink.streaming.api.datastream.DataStreamSource;
@@ -25,6 +26,8 @@ public class Driver {
 
 		StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
 		env.setStreamTimeCharacteristic(TimeCharacteristic.EventTime);
+		env.enableCheckpointing(1000L);
+		env.setStateBackend(new MemoryStateBackend());
         DataStreamSource<Tuple3<String, Long, String>> sourceDateStream = env.fromElements(
             new Tuple3<String, Long, String>("a",1000000001000L,"22")
             ,new Tuple3<String, Long, String>("a",1000000002000L,"23")
