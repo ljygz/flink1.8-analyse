@@ -533,7 +533,7 @@ public abstract class ClusterEntrypoint implements AutoCloseableAsync, FatalErro
 
 //	这个方法会被调用启动jobmanager
 //		yarn模式通过 YarnJobClusterEntrypoint
-//					YarnSessionClusterEntrypoint
+//					 YarnSessionClusterEntrypoint
 //		StandAlone模式通过
 //				   	StandaloneJobClusterEntryPoint
 //					StandaloneSessionClusterEntryPoint

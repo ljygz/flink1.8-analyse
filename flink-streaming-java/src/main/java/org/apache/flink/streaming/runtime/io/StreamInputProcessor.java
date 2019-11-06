@@ -213,7 +213,7 @@ public class StreamInputProcessor<IN> {
 			}
 //			获取数据到上面的currentRecordDeserializer
 //			barrierHandler根据语义
-//					BarrierBuffer 会柱塞
+//					BarrierBuffer 会柱塞某channel接收到第一个barrier后到整个barriers全部对齐这段时间来的下一个cp的数据
 //					BarrierTracker
 
 //			以及包含接收端的反压逻辑

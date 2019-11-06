@@ -363,6 +363,7 @@ public abstract class Dispatcher extends FencedRpcEndpoint<DispatcherId> impleme
 					fatalErrorHandler)),
 			rpcService.getExecutor());
 //		真正启动 以及修改状态让coordinator监听到状态改变开始运行
+//		函数编程 这个函数就是覆盖不同名字的里面的apple
 		return jobManagerRunnerFuture.thenApply(FunctionUtils.uncheckedFunction(this::startJobManagerRunner));
 	}
 

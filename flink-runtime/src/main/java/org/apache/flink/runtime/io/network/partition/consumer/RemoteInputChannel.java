@@ -288,6 +288,7 @@ public class RemoteInputChannel extends InputChannel implements BufferRecycler, 
 	/**
 	 * Enqueue this input channel in the pipeline for notifying the producer of unannounced credit.
 	 */
+//	唤醒信任，发送响应给上游
 	private void notifyCreditAvailable() {
 		checkState(partitionRequestClient != null, "Tried to send task event to producer before requesting a queue.");
 
@@ -381,7 +382,7 @@ public class RemoteInputChannel extends InputChannel implements BufferRecycler, 
 					notificationResult = NotificationResult.BUFFER_USED_NEED_MORE;
 				}
 			}
-
+//			这个数就是可用的buffer数量，add1 获取原来的值，如果原来的值是0 触发唤醒信任
 			if (unannouncedCredit.getAndAdd(1) == 0) {
 				notifyCreditAvailable();
 			}
@@ -470,6 +471,7 @@ public class RemoteInputChannel extends InputChannel implements BufferRecycler, 
 	 *
 	 * @param backlog The number of unsent buffers in the producer's sub partition.
 	 */
+//	上游生产端挤压的消息+信任数 小于可用的buffers数，会向pool请求buffers以后 触发向上游响应信任
 	void onSenderBacklog(int backlog) throws IOException {
 		int numRequestedBuffers = 0;
 
@@ -499,6 +501,7 @@ public class RemoteInputChannel extends InputChannel implements BufferRecycler, 
 		}
 	}
 
+//	里面包含了根据消息挤压的量来，是否向上游返回信任对象
 	public void onBuffer(Buffer buffer, int sequenceNumber, int backlog) throws IOException {
 		boolean recycleBuffer = true;
 
@@ -530,6 +533,7 @@ public class RemoteInputChannel extends InputChannel implements BufferRecycler, 
 			}
 
 			if (backlog >= 0) {
+//				判断是否挤压消息达到一定量，来决定是否向上游返回信任
 				onSenderBacklog(backlog);
 			}
 		} finally {

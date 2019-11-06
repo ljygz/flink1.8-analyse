@@ -295,6 +295,7 @@ class LocalBufferPool implements BufferPool {
 		// We do not know which locks have been acquired before the recycle() or are needed in the
 		// notification and which other threads also access them.
 		// -> call notifyBufferAvailable() outside of the synchronized block to avoid a deadlock (FLINK-9676)
+//		触发buffer可用包含 向上游返回信任响应消息
 		NotificationResult notificationResult = listener.notifyBufferAvailable(new NetworkBuffer(segment, this));
 		if (notificationResult.needsMoreBuffers()) {
 			synchronized (availableMemorySegments) {

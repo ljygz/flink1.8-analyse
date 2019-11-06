@@ -172,6 +172,9 @@ public class PartitionRequestClient {
 	}
 
 	public void notifyCreditAvailable(RemoteInputChannel inputChannel) {
+//		这里的向上游返回响应的clientHandler分为两种，，
+//			1. 基于信任	(向上游发送creitd对象)
+//			2.不基于信任 （啥都不干）
 		clientHandler.notifyCreditAvailable(inputChannel);
 	}
 

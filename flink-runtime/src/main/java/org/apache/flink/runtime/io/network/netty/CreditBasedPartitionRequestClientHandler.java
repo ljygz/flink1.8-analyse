@@ -108,6 +108,7 @@ class CreditBasedPartitionRequestClientHandler extends ChannelInboundHandlerAdap
 		}
 	}
 
+//	触发向客户端，上游返回credit,哪个channel可以信任了
 	@Override
 	public void notifyCreditAvailable(final RemoteInputChannel inputChannel) {
 		ctx.executor().execute(() -> ctx.pipeline().fireUserEventTriggered(inputChannel));
@@ -172,6 +173,7 @@ class CreditBasedPartitionRequestClientHandler extends ChannelInboundHandlerAdap
 	@Override
 	public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
 		try {
+//			包含向pool请求buffer,以及根据挤压数据量向上游返回credit
 			decodeMsg(msg);
 		} catch (Throwable t) {
 			notifyAllChannelsOfErrorAndClose(t);
@@ -184,9 +186,11 @@ class CreditBasedPartitionRequestClientHandler extends ChannelInboundHandlerAdap
 	 * <p>Enqueues the input channel and will trigger write&flush unannounced credits
 	 * for this input channel if it is the first one in the queue.
 	 */
+//	当buffer 数据从0变到1 会唤醒一次 信任 （往上游发送响应）
 	@Override
 	public void userEventTriggered(ChannelHandlerContext ctx, Object msg) throws Exception {
 		if (msg instanceof RemoteInputChannel) {
+//			当credit机制的inputchannel为空时会触发写
 			boolean triggerWrite = inputChannelsWithCredit.isEmpty();
 
 			inputChannelsWithCredit.add((RemoteInputChannel) msg);
@@ -240,7 +244,7 @@ class CreditBasedPartitionRequestClientHandler extends ChannelInboundHandlerAdap
 			}
 		}
 	}
-
+//	用于接收反序列化消息，里面包含反压向pool请求buffer，以及根据挤压量向上游响应是否发生credit
 	private void decodeMsg(Object msg) throws Throwable {
 		final Class<?> msgClazz = msg.getClass();
 
@@ -256,7 +260,7 @@ class CreditBasedPartitionRequestClientHandler extends ChannelInboundHandlerAdap
 
 				return;
 			}
-//			同样的请求buffer反压逻辑
+//			同样的请求buffer反压逻辑，以及根据消息挤压量确定是否返回credit到上游
 			decodeBufferOrEvent(inputChannel, bufferOrEvent);
 
 		} else if (msgClazz == NettyMessage.ErrorResponse.class) {
@@ -306,7 +310,7 @@ class CreditBasedPartitionRequestClientHandler extends ChannelInboundHandlerAdap
 				Buffer buffer = inputChannel.requestBuffer();
 				if (buffer != null) {
 					nettyBuffer.readBytes(buffer.asByteBuf(), receivedSize);
-
+//			--------里面同时还包含了根据消息挤压量来决定是否向上游返回信任------------
 					inputChannel.onBuffer(buffer, bufferOrEvent.sequenceNumber, bufferOrEvent.backlog);
 				} else if (inputChannel.isReleased()) {
 					cancelRequestFor(bufferOrEvent.receiverId);
@@ -321,7 +325,7 @@ class CreditBasedPartitionRequestClientHandler extends ChannelInboundHandlerAdap
 
 				MemorySegment memSeg = MemorySegmentFactory.wrap(byteArray);
 				Buffer buffer = new NetworkBuffer(memSeg, FreeingBufferRecycler.INSTANCE, false, receivedSize);
-
+//			--------里面同时还包含了根据消息挤压量来决定是否向上游返回信任------------
 				inputChannel.onBuffer(buffer, bufferOrEvent.sequenceNumber, bufferOrEvent.backlog);
 			}
 		} finally {
@@ -335,6 +339,7 @@ class CreditBasedPartitionRequestClientHandler extends ChannelInboundHandlerAdap
 	 * <p>This method may be called by the first input channel enqueuing, or the complete
 	 * future's callback in previous input channel, or the channel writability changed event.
 	 */
+//	往 下面的outbound 发送一个credit的信任，包含信任哪一个channel
 	private void writeAndFlushNextMessageIfPossible(Channel channel) {
 		if (channelError.get() != null || !channel.isWritable()) {
 			return;
@@ -358,6 +363,7 @@ class CreditBasedPartitionRequestClientHandler extends ChannelInboundHandlerAdap
 
 				// Write and flush and wait until this is done before
 				// trying to continue with the next input channel.
+//				往上游发送信任的响应
 				channel.writeAndFlush(msg).addListener(writeListener);
 
 				return;

@@ -123,13 +123,16 @@ public class NettyProtocol {
 	 */
 	public ChannelHandler[] getClientChannelHandlers() {
 		NetworkClientHandler networkClientHandler =
-//			包含基于credit的netty反压感知
+//			包含基于credit的netty反压感知 ,里面接收数据反序列化的时候会 根据挤压量来是否向上游返回credit
 			creditBasedEnabled ? new CreditBasedPartitionRequestClientHandler() :
-//			不包含基于credit的netty反压基于tcp以及接收端请求buffer反压感知
+//			不包含基于credit的(不会返回给上游credit),netty反压基于tcp以及接收端请求buffer反压感知
 				new PartitionRequestClientHandler();
+
+//		这里就是整个client接收端 netty的逻辑了
 		return new ChannelHandler[] {
 			messageEncoder,
 			new NettyMessage.NettyMessageDecoder(!creditBasedEnabled),
+//			当信任的时候这个inbound会往outbound发送一个credit对象，outbound直接返回给了服务端，也就是上游
 			networkClientHandler};
 	}
 

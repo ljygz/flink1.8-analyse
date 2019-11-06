@@ -43,6 +43,9 @@ import static org.apache.flink.util.Preconditions.checkArgument;
 import static org.apache.flink.util.Preconditions.checkNotNull;
 
 /**
+ * 意思是 当接收到一个barriers后会柱塞等待barriers对齐？ 是的
+ * 这段时间channel 收到一个barrier到所有barrier对齐这段数据会被buffer起来
+ * 注意 每个channel 收到第一个barrier的时间可能不一样
  * The barrier buffer is {@link CheckpointBarrierHandler} that blocks inputs with barriers until
  *  * all inputs have received the barrier for a given checkpoint.
  *
@@ -164,6 +167,7 @@ public class BarrierBuffer implements CheckpointBarrierHandler {
 			// process buffered BufferOrEvents before grabbing new ones
 			Optional<BufferOrEvent> next;
 			if (currentBuffered == null) {
+//				获取上游数据包含反压，以及cretid
 				next = inputGate.getNextBufferOrEvent();
 			}
 			else {
@@ -247,7 +251,6 @@ public class BarrierBuffer implements CheckpointBarrierHandler {
 
 		// -- general code path for multiple input channels --
 
-		// -- 判断是否需要创建一个新的checkpoint --
 
 		if (numBarriersReceived > 0) {
 			// this is only true if some alignment is already progress and was not canceled
@@ -256,6 +259,7 @@ public class BarrierBuffer implements CheckpointBarrierHandler {
 				// regular case 当接收到一个当前id的barrier如果那个channel为！block 接收到的numBarriersReceived数++
 				onBarrier(channelIndex);
 			}
+					// -- 判断是否需要创建一个新的checkpoint --
 			else if (barrierId > currentCheckpointId) {
 				// we did not complete the current checkpoint, another started before
 				LOG.warn("{}: Received checkpoint barrier for checkpoint {} before completing current checkpoint {}. " +

@@ -268,6 +268,7 @@ public class RestClient implements AutoCloseableAsync {
 				typeParameters.toArray(new Class<?>[typeParameters.size()]));
 		}
 
+//		发送HTTP rest请求用于提交job
 		return submitRequest(targetAddress, targetPort, httpRequest, responseType);
 	}
 

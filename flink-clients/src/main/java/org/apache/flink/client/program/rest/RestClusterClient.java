@@ -313,6 +313,7 @@ public class RestClusterClient<T> extends ClusterClient<T> implements NewCluster
 			});
 	}
 
+//	dispatcher就是jobmanager端的所有rpc接口启动的类
 	/**
 	 * Submits the given {@link JobGraph} to the dispatcher.
 	 *
@@ -364,6 +365,8 @@ public class RestClusterClient<T> extends ClusterClient<T> implements NewCluster
 
 //		真正发送请求
 		final CompletableFuture<JobSubmitResponseBody> submissionFuture = requestFuture.thenCompose(
+//			requestAndFileUploads就是前面包含submitjob的request请求
+//			发送前面submitjob的请求
 			requestAndFileUploads -> sendRetriableRequest(
 				JobSubmitHeaders.getInstance(),
 				EmptyMessageParameters.getInstance(),
@@ -720,6 +723,7 @@ public class RestClusterClient<T> extends ClusterClient<T> implements NewCluster
 	sendRetriableRequest(M messageHeaders, U messageParameters, R request, Collection<FileUpload> filesToUpload, Predicate<Throwable> retryPredicate) {
 		return retry(() -> getWebMonitorBaseUrl().thenCompose(webMonitorBaseUrl -> {
 			try {
+//				发送
 				return restClient.sendRequest(webMonitorBaseUrl.getHost(), webMonitorBaseUrl.getPort(), messageHeaders, messageParameters, request, filesToUpload);
 			} catch (IOException e) {
 				throw new CompletionException(e);
