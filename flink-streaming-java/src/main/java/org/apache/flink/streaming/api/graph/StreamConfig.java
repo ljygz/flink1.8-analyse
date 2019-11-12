@@ -206,6 +206,7 @@ public class StreamConfig implements Serializable {
 		return getBufferTimeout() == 0;
 	}
 
+//	设置用户的operator 初始化的时候会取出来，放到head里面
 	public void setStreamOperator(StreamOperator<?> operator) {
 		if (operator != null) {
 			config.setClass(USER_FUNCTION, operator.getClass());

@@ -124,9 +124,10 @@ class PartitionRequestServerHandler extends SimpleChannelInboundHandler<NettyMes
 				outboundQueue.cancel(request.receiverId);
 			} else if (msgClazz == CloseRequest.class) {
 				outboundQueue.close();
+//				这里是服务端server发送数据端 ，当接收到下游发送过来的信任Credit(证明下游还有buffer,server还可以继续发送数据)响应以后
 			} else if (msgClazz == AddCredit.class) {
 				AddCredit request = (AddCredit) msg;
-
+//				向这个nettyOutBound中的reader加入信任
 				outboundQueue.addCredit(request.receiverId, request.credit);
 			} else {
 				LOG.warn("Received unexpected client request: {}", msg);

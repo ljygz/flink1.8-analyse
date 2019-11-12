@@ -454,6 +454,7 @@ public class StreamingJobGraphGenerator {
 			}
 		}
 
+//		这里设置用户的operator
 		config.setStreamOperator(vertex.getOperator());
 		config.setOutputSelectors(vertex.getOutputSelectors());
 
@@ -465,6 +466,7 @@ public class StreamingJobGraphGenerator {
 
 		final CheckpointConfig checkpointCfg = streamGraph.getCheckpointConfig();
 
+//		为config设置其中需要的各种对象，这里是设置状态后端
 		config.setStateBackend(streamGraph.getStateBackend());
 		config.setCheckpointingEnabled(checkpointCfg.isCheckpointingEnabled());
 		if (checkpointCfg.isCheckpointingEnabled()) {

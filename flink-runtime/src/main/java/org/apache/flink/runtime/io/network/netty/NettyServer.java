@@ -150,7 +150,7 @@ class NettyServer {
 				if (sslHandlerFactory != null) {
 					channel.pipeline().addLast("ssl", sslHandlerFactory.createNettySSLHandler());
 				}
-
+//				netty服务端，的具体逻辑用于向下游发送数据的server端
 				channel.pipeline().addLast(protocol.getServerChannelHandlers());
 			}
 		});

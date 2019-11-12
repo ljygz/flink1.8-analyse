@@ -101,8 +101,9 @@ public class OperatorChain<OUT, OP extends StreamOperator<OUT>> implements Strea
 		final ClassLoader userCodeClassloader = containingTask.getUserCodeClassLoader();
 		final StreamConfig configuration = containingTask.getConfiguration();
 
+//		从config中获取用户的operator
 		headOperator = configuration.getStreamOperator(userCodeClassloader);
-
+//		通过config创建chain的所有operator的chainConfig
 		// we read the chained configs, and the order of record writer registrations by output name
 		Map<Integer, StreamConfig> chainedConfigs = configuration.getTransitiveChainedTaskConfigsWithSelf(userCodeClassloader);
 
@@ -121,6 +122,7 @@ public class OperatorChain<OUT, OP extends StreamOperator<OUT>> implements Strea
 				RecordWriterOutput<?> streamOutput = createStreamOutput(
 					recordWriters.get(i),
 					outEdge,
+//					从chainConfig中获取一个config用于后面从中取得对应的operator
 					chainedConfigs.get(outEdge.getSourceId()),
 					containingTask.getEnvironment());
 
@@ -356,7 +358,9 @@ public class OperatorChain<OUT, OP extends StreamOperator<OUT>> implements Strea
 
 	private <IN, OUT> WatermarkGaugeExposingOutput<StreamRecord<IN>> createChainedOperator(
 			StreamTask<?, ?> containingTask,
+//			这里的config中包含用户逻辑的oneinputstreamoperator
 			StreamConfig operatorConfig,
+//			这里包含chain的所有operator
 			Map<Integer, StreamConfig> chainedConfigs,
 			ClassLoader userCodeClassloader,
 			Map<StreamEdge, RecordWriterOutput<?>> streamOutputs,
@@ -377,7 +381,7 @@ public class OperatorChain<OUT, OP extends StreamOperator<OUT>> implements Strea
 
 		// now create the operator and give it the output collector to write its output to
 //		创建operator
-//		通过用户的逻辑类
+//		通过用户的逻辑类,从config中获取的
 		OneInputStreamOperator<IN, OUT> chainedOperator = operatorConfig.getStreamOperator(userCodeClassloader);
 
 //		设置output

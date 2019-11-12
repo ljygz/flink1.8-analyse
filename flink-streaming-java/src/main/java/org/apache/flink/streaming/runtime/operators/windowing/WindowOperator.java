@@ -403,6 +403,7 @@ public class WindowOperator<K, IN, ACC, OUT, W extends Window>
 				triggerContext.key = key;
 				triggerContext.window = window;
 
+//				这里会先进行一个判断这条数据属于的窗口是否已经能触发计算了，事件时间还没到的话，将窗口的右边界作为timer定时器
 				TriggerResult triggerResult = triggerContext.onElement(element);
 
 //				来的元素判断时候触发，如果刚好在触发的正点上

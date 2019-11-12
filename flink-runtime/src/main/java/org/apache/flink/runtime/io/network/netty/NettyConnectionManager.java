@@ -49,8 +49,9 @@ public class NettyConnectionManager implements ConnectionManager {
 			partitionProvider,
 			taskEventDispatcher,
 			client.getConfig().isCreditBasedEnabled());
-
+//		这里的client端初始化了但是还没有启动，没有bind()
 		client.init(partitionRequestProtocol, bufferPool);
+//		启动服务端(bind)
 		server.init(partitionRequestProtocol, bufferPool);
 	}
 

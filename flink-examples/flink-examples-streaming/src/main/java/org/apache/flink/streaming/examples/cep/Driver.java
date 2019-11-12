@@ -1,13 +1,8 @@
 package org.apache.flink.streaming.examples.cep;
 
-import org.apache.flink.api.common.ExecutionConfig;
-import org.apache.flink.api.common.typeutils.base.VoidSerializer;
-import org.apache.flink.api.java.tuple.Tuple2;
 import org.apache.flink.api.java.tuple.Tuple3;
-import org.apache.flink.api.java.typeutils.runtime.kryo.KryoSerializer;
 import org.apache.flink.cep.CEP;
 import org.apache.flink.cep.PatternStream;
-import org.apache.flink.cep.PatternTimeoutFunction;
 import org.apache.flink.cep.RichPatternSelectFunction;
 import org.apache.flink.cep.greelistern.CepListen;
 import org.apache.flink.cep.pattern.Pattern;
@@ -16,11 +11,9 @@ import org.apache.flink.streaming.api.TimeCharacteristic;
 import org.apache.flink.streaming.api.datastream.SingleOutputStreamOperator;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
 import org.apache.flink.streaming.api.functions.AssignerWithPunctuatedWatermarks;
-import org.apache.flink.streaming.api.functions.sink.TwoPhaseCommitSinkFunction;
 import org.apache.flink.streaming.api.watermark.Watermark;
 import org.apache.flink.streaming.api.windowing.time.Time;
 import javax.annotation.Nullable;
-import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.Map;
 
@@ -106,14 +99,13 @@ public class Driver {
 								return value.f0.equals("g");
 							}
 						})
-//			正则匹配的第一个元素的时间到最后一个元素的时间不能超过，这个时间
 						.within(Time.minutes(5));
 					return pattern;
 				}
 			});
 
 		patternstream
-//			这里也可以加上一个timeoutFunction用于处理匹配因为超时而没有匹配上的一个正则。（如果中途直接没有匹配上就删这里是一直匹配但超时了还未匹配完整）
+//			这里也可以加上一个timeoutFunction用于处理匹配因为超时而没有匹配上的一个正则。（如果中途直接没有匹配上就删这里是一直匹	配但超时了还未匹配完整）
 //			.select(new PatternTimeoutFunction(),new RichPatternSelectFunction)
 			.select(new RichPatternSelectFunction<Tuple3<String, Long, String>,Tuple3<String,String,String>>() {
 			@Override

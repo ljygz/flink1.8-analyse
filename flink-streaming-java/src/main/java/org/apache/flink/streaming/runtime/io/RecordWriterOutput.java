@@ -42,6 +42,7 @@ import static org.apache.flink.util.Preconditions.checkNotNull;
 /**
  * Implementation of {@link Output} that sends data using a {@link RecordWriter}.
  */
+//直接往下游发送的output
 @Internal
 public class RecordWriterOutput<OUT> implements OperatorChain.WatermarkGaugeExposingOutput<StreamRecord<OUT>> {
 
@@ -104,6 +105,7 @@ public class RecordWriterOutput<OUT> implements OperatorChain.WatermarkGaugeExpo
 		serializationDelegate.setInstance(record);
 
 		try {
+//			直接往下游发送
 			recordWriter.emit(serializationDelegate);
 		}
 		catch (Exception e) {

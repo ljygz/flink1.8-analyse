@@ -112,6 +112,7 @@ class CreditBasedSequenceNumberingViewReader implements BufferAvailabilityListen
 	 * Returns true only if the next buffer is an event or the reader has both available
 	 * credits and buffers.
 	 */
+//	这里就是发送端信任机制的判断！！只有buffer可用即有消息，（且Credit数>0 || 或消息不为数据为事件Event时） 才可往下发送
 	@Override
 	public boolean isAvailable() {
 		// BEWARE: this must be in sync with #isAvailable(BufferAndBacklog)!
@@ -192,6 +193,7 @@ class CreditBasedSequenceNumberingViewReader implements BufferAvailabilityListen
 		subpartitionView.releaseAllResources();
 	}
 
+//	当处理端的output触发out,然后emit数据时会触发这个方法
 	@Override
 	public void notifyDataAvailable() {
 		requestQueue.notifyReaderNonEmpty(this);

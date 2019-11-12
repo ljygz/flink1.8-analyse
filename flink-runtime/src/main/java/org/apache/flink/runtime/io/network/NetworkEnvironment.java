@@ -325,7 +325,7 @@ public class NetworkEnvironment {
 			}
 		}
 	}
-
+	//				这里启动了netty
 	public void start() throws IOException {
 		synchronized (lock) {
 			Preconditions.checkState(!isShutdown, "The NetworkEnvironment has already been shut down.");
@@ -334,6 +334,9 @@ public class NetworkEnvironment {
 
 			try {
 				LOG.debug("Starting network connection manager");
+//				这里启动了netty
+//					server端用于向下游发送数据，启动了bind()
+//					client端用于接收上游发送的数据，初始化了但是没有bind()
 				connectionManager.start(resultPartitionManager, taskEventDispatcher);
 			} catch (IOException t) {
 				throw new IOException("Failed to instantiate network connection manager.", t);

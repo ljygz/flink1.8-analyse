@@ -5,21 +5,16 @@ import org.apache.flink.api.java.tuple.Tuple;
 import org.apache.flink.api.java.tuple.Tuple3;
 import org.apache.flink.runtime.state.memory.MemoryStateBackend;
 import org.apache.flink.streaming.api.TimeCharacteristic;
-import org.apache.flink.streaming.api.datastream.AsyncDataStream;
 import org.apache.flink.streaming.api.datastream.DataStreamSource;
+import org.apache.flink.streaming.api.datastream.IterativeStream;
 import org.apache.flink.streaming.api.datastream.KeyedStream;
-import org.apache.flink.streaming.api.datastream.SingleOutputStreamOperator;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
 import org.apache.flink.streaming.api.functions.AssignerWithPunctuatedWatermarks;
-import org.apache.flink.streaming.api.functions.windowing.ProcessWindowFunction;
 import org.apache.flink.streaming.api.watermark.Watermark;
 import org.apache.flink.streaming.api.windowing.assigners.TumblingEventTimeWindows;
 import org.apache.flink.streaming.api.windowing.time.Time;
-import org.apache.flink.streaming.api.windowing.windows.TimeWindow;
-import org.apache.flink.util.Collector;
 
 import javax.annotation.Nullable;
-import java.util.Iterator;
 
 public class Driver {
     public static void main(String[] args) throws Exception {
@@ -29,7 +24,7 @@ public class Driver {
 		env.enableCheckpointing(1000L);
 		env.setStateBackend(new MemoryStateBackend());
         DataStreamSource<Tuple3<String, Long, String>> sourceDateStream = env.fromElements(
-            new Tuple3<String, Long, String>("a",1000000001000L,"22")
+             new Tuple3<String, Long, String>("a",1000000001000L,"22")
             ,new Tuple3<String, Long, String>("a",1000000002000L,"23")
             ,new Tuple3<String, Long, String>("a",1000000003000L,"23")
             ,new Tuple3<String, Long, String>("a",1000000004000L,"24")
@@ -79,5 +74,6 @@ public class Driver {
 
 //      前面的各种operator已经在env中注册了
         env.execute("leaning");
+
     }
 }

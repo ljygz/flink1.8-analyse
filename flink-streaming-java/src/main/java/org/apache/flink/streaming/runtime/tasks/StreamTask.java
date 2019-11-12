@@ -253,7 +253,7 @@ public abstract class StreamTask<OUT, OP extends StreamOperator<OUT>>
 				getEnvironment());
 
 			asynchronousCheckpointExceptionHandler = new AsyncCheckpointExceptionHandler(this);
-
+//			创建状态后端 ，默认是memory
 			stateBackend = createStateBackend();
 			checkpointStorage = stateBackend.createCheckpointStorage(getEnvironment().getJobID());
 

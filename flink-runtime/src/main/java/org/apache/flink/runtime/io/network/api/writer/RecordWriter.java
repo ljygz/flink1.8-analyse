@@ -157,9 +157,11 @@ public class RecordWriter<T extends IOReadableWritable> {
 	}
 
 	private void emit(T record, int targetChannel) throws IOException, InterruptedException {
+//		将数据序列化放到serializer中buffer
 		serializer.serializeRecord(record);
 //		包含输出端反压逻辑
 		if (copyFromSerializerToTargetChannel(targetChannel)) {
+//			清空
 			serializer.prune();
 		}
 	}
@@ -174,9 +176,9 @@ public class RecordWriter<T extends IOReadableWritable> {
 		serializer.reset();
 
 		boolean pruneTriggered = false;
-//		请求buffer
+//		请求buffer，反压？
 		BufferBuilder bufferBuilder = getBufferBuilder(targetChannel);
-//		将序列化的数据写入buffer
+//		将序列化的数据写入申请到的buffer
 		SerializationResult result = serializer.copyToBufferBuilder(bufferBuilder);
 		while (result.isFullBuffer()) {
 			numBytesOut.inc(bufferBuilder.finish());
@@ -197,7 +199,7 @@ public class RecordWriter<T extends IOReadableWritable> {
 		checkState(!serializer.hasSerializedData(), "All data should be written at once");
 
 		if (flushAlways) {
-//			将序列化的数据写出去
+//			将序列化的数据的那个partation写出去
 			targetPartition.flush(targetChannel);
 		}
 		return pruneTriggered;

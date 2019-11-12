@@ -182,7 +182,8 @@ public abstract class NettyMessage {
 					}
 				}
 			}
-//			这里会把信任机制的 creit 返回给上游，自己是客户端 返回给上游服务端cretid包含哪个channel可以信任
+//			如果是Client端这里会把信任机制的 creit 返回给上游，自己是客户端 返回给上游服务端cretid包含哪个channel可以信任
+//			如果是Server端这里往下游发
 			else {
 				ctx.write(msg, promise);
 			}

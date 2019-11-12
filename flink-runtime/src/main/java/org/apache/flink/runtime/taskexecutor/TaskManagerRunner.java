@@ -145,6 +145,10 @@ public class TaskManagerRunner implements FatalErrorHandler, AutoCloseableAsync 
 			configuration, highAvailabilityServices.createBlobStore(), null
 		);
 
+//		启动io组件
+//		启动netty的client和server
+//			client初始化了但是没有bind()
+//		    server启动了并bind()
 		taskManager = startTaskManager(
 			this.configuration,
 			this.resourceId,
@@ -367,6 +371,9 @@ public class TaskManagerRunner implements FatalErrorHandler, AutoCloseableAsync 
 				localCommunicationOnly);
 
 //		包含初始化ioManager 起io线程等待拉取queue
+//		包含启动网络这里启动了netty
+//					server端用于向下游发送数据，启动了bind()
+//					client端用于接收上游发送的数据，初始化了但是没有bind()
 		TaskManagerServices taskManagerServices = TaskManagerServices.fromConfiguration(
 			taskManagerServicesConfiguration,
 			resourceID,

@@ -77,6 +77,7 @@ public class NettyProtocol {
 	 * @return channel handlers
 	 */
 	public ChannelHandler[] getServerChannelHandlers() {
+//		这个outBound里面包含了所有来自下游响应的Credit
 		PartitionRequestQueue queueOfPartitionQueues = new PartitionRequestQueue();
 		PartitionRequestServerHandler serverHandler = new PartitionRequestServerHandler(
 			partitionProvider, taskEventDispatcher, queueOfPartitionQueues, creditBasedEnabled);

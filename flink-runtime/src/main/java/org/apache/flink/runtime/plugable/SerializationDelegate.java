@@ -33,6 +33,7 @@ import java.io.IOException;
  */
 public class SerializationDelegate<T> implements IOReadableWritable {
 
+//	这个就是record
 	private T instance;
 
 	private final TypeSerializer<T> serializer;

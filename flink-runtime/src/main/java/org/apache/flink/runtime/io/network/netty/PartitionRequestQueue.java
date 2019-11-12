@@ -50,6 +50,8 @@ import static org.apache.flink.runtime.io.network.netty.NettyMessage.BufferRespo
  * A nonEmptyReader of partition queues, which listens for channel writability changed
  * events before writing and flushing {@link Buffer} instances.
  */
+// 这个InBoundHander没有重写ChannelRead方法上一个inbound的数据直接往下发了
+//	这个类的目的 是当算子触发emit往下游发数据时，会通过调用EventTriggered来触发这个inbound往下游发数据，并且包含信任Credit机制
 class PartitionRequestQueue extends ChannelInboundHandlerAdapter {
 
 	private static final Logger LOG = LoggerFactory.getLogger(PartitionRequestQueue.class);
@@ -77,6 +79,7 @@ class PartitionRequestQueue extends ChannelInboundHandlerAdapter {
 		super.channelRegistered(ctx);
 	}
 
+	//	当处理端的output触发out,然后emit数据时会触发这个方法
 	void notifyReaderNonEmpty(final NetworkSequenceViewReader reader) {
 		// The notification might come from the same thread. For the initial writes this
 		// might happen before the reader has set its reference to the view, because
@@ -98,6 +101,7 @@ class PartitionRequestQueue extends ChannelInboundHandlerAdapter {
 	 * availability, so there is no race condition here.
 	 */
 	private void enqueueAvailableReader(final NetworkSequenceViewReader reader) throws Exception {
+//		这里的reader.isAvailable()会判断是否有数据，以及是否有Credit才发数据
 		if (reader.isRegisteredAsAvailable() || !reader.isAvailable()) {
 			return;
 		}
@@ -108,6 +112,7 @@ class PartitionRequestQueue extends ChannelInboundHandlerAdapter {
 		registerAvailableReader(reader);
 
 		if (triggerWrite) {
+//			拉取AvailableReaderqueue中的reader中的数据buffer往下游发送了
 			writeAndFlushNextMessageIfPossible(ctx.channel());
 		}
 	}
@@ -160,18 +165,20 @@ class PartitionRequestQueue extends ChannelInboundHandlerAdapter {
 		NetworkSequenceViewReader reader = allReaders.get(receiverId);
 		if (reader != null) {
 			reader.addCredit(credit);
-
+//			加信任的时候也会触发一次，写入的判断如果满足条件，reader中的数据writerAndFlush
 			enqueueAvailableReader(reader);
 		} else {
 			throw new IllegalStateException("No reader for receiverId = " + receiverId + " exists.");
 		}
 	}
 
+	//	当处理端的output触发out,然后emit数据时会触发这个方法
 	@Override
 	public void userEventTriggered(ChannelHandlerContext ctx, Object msg) throws Exception {
 		// The user event triggered event loop callback is used for thread-safe
 		// hand over of reader queues and cancelled producers.
 
+//		这个NetworkSequenceViewReader msg 这里面包含了往下游发送的数据channel ID
 		if (msg instanceof NetworkSequenceViewReader) {
 			enqueueAvailableReader((NetworkSequenceViewReader) msg);
 		} else if (msg.getClass() == InputChannelID.class) {

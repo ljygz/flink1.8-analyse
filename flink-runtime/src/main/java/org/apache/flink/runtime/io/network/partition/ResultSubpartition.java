@@ -41,6 +41,7 @@ public abstract class ResultSubpartition {
 	protected final ResultPartition parent;
 
 	/** All buffers of this subpartition. Access to the buffers is synchronized on this object. */
+//	缓冲区里面包含了这个subpartition的数据，用于后面拉取
 	protected final ArrayDeque<BufferConsumer> buffers = new ArrayDeque<>();
 
 	/** The number of non-event buffers currently in this subpartition. */

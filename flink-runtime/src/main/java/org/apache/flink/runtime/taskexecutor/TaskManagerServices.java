@@ -228,6 +228,9 @@ public class TaskManagerServices {
 		checkTempDirs(taskManagerServicesConfiguration.getTmpDirPaths());
 
 		final NetworkEnvironment network = createNetworkEnvironment(taskManagerServicesConfiguration, maxJvmHeapMemory);
+//				这里启动了netty
+//					server端用于向下游发送数据，启动了bind()
+//					client端用于接收上游发送的数据，初始化了但是没有bind()
 		network.start();
 
 		final TaskManagerLocation taskManagerLocation = new TaskManagerLocation(
