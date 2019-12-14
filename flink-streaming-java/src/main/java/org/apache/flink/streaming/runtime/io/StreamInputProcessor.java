@@ -192,6 +192,8 @@ public class StreamInputProcessor<IN> {
 //						盲猜这里就是更新状态了，如果是Idle，这条上游流的状态就修改成停滞流
 						statusWatermarkValve.inputStreamStatus(recordOrMark.asStreamStatus(), currentChannel);
 						continue;
+//					当接收到的是一个又source发送过来的LatencyMarker
+//					LatencyMarker没有过用户处理代码，直接计算一个延迟值然后往下发送了
 					} else if (recordOrMark.isLatencyMarker()) {
 						// handle latency marker
 						synchronized (lock) {
