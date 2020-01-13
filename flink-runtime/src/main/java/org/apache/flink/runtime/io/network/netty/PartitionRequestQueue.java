@@ -257,6 +257,7 @@ class PartitionRequestQueue extends ChannelInboundHandlerAdapter {
 						next.buffer(),
 						reader.getSequenceNumber(),
 						reader.getReceiverId(),
+//						这里是一个发送端积压量int,
 						next.buffersInBacklog());
 
 					// Write and flush and wait until this is done before

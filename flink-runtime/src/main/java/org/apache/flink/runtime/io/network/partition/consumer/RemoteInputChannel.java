@@ -202,6 +202,7 @@ public class RemoteInputChannel extends InputChannel implements BufferRecycler, 
 
 		numBytesIn.inc(next.getSizeUnsafe());
 		numBuffersIn.inc();
+//		这里有个积压量就是 RemoteInputChannel中 numRequiredBuffers - initialCredit;
 		return Optional.of(new BufferAndAvailability(next, moreAvailable, getSenderBacklog()));
 	}
 
@@ -334,6 +335,7 @@ public class RemoteInputChannel extends InputChannel implements BufferRecycler, 
 		return numRequiredBuffers;
 	}
 
+//	这个积压量是请求的buffer数-已经分给信任的buffer数
 	public int getSenderBacklog() {
 		return numRequiredBuffers - initialCredit;
 	}

@@ -45,6 +45,7 @@ public abstract class ResultSubpartition {
 	protected final ArrayDeque<BufferConsumer> buffers = new ArrayDeque<>();
 
 	/** The number of non-event buffers currently in this subpartition. */
+//	这个积压量就是有多少record数据
 	@GuardedBy("buffers")
 	private int buffersInBacklog;
 

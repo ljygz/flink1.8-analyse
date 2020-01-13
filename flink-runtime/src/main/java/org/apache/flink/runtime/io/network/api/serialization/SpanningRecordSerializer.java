@@ -42,6 +42,7 @@ public class SpanningRecordSerializer<T extends IOReadableWritable> implements R
 	private final DataOutputSerializer serializationBuffer;
 
 	/** Intermediate buffer for data serialization (wrapped from {@link #serializationBuffer}). */
+//	装原来放在serializationBuffer里的数据
 	private ByteBuffer dataBuffer;
 
 	/** Intermediate buffer for length serialization. */
@@ -74,6 +75,7 @@ public class SpanningRecordSerializer<T extends IOReadableWritable> implements R
 		serializationBuffer.clear();
 		lengthBuffer.clear();
 
+//		写到这个serializebuffer里面去
 		// write data and length
 		record.write(serializationBuffer);
 

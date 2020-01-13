@@ -98,6 +98,7 @@ class HeapReducingState<K, N, V>
 		}
 
 		try {
+//			调用用户reduce和agg方法
 			stateTable.transform(currentNamespace, value, reduceTransformation);
 		} catch (Exception e) {
 			throw new IOException("Exception while applying ReduceFunction in reducing state", e);
@@ -121,6 +122,7 @@ class HeapReducingState<K, N, V>
 			this.reduceFunction = Preconditions.checkNotNull(reduceFunction);
 		}
 
+//		这里会调用用户的reduce方法
 		@Override
 		public V apply(V previousState, V value) throws Exception {
 			return previousState != null ? reduceFunction.reduce(previousState, value) : value;

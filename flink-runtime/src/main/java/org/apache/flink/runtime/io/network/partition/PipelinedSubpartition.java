@@ -189,6 +189,7 @@ class PipelinedSubpartition extends ResultSubpartition {
 			return new BufferAndBacklog(
 				buffer,
 				isAvailableUnsafe(),
+//				这里会获取一个发送端数据的积压量，发送端未发送且未获取Credit的数据
 				getBuffersInBacklog(),
 				nextBufferIsEventUnsafe());
 		}

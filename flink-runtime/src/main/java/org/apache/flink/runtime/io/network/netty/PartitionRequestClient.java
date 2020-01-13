@@ -108,7 +108,7 @@ public class PartitionRequestClient {
 		clientHandler.addInputChannel(inputChannel);
 
 		final PartitionRequest request = new PartitionRequest(
-//			Credit机制
+
 				partitionId, subpartitionIndex, inputChannel.getInputChannelId(), inputChannel.getInitialCredit());
 
 		final ChannelFutureListener listener = new ChannelFutureListener() {

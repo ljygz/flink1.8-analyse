@@ -548,7 +548,7 @@ public class SingleInputGate implements InputGate {
 				enqueuedInputChannelsWithData.clear(currentChannel.getChannelIndex());
 				moreAvailable = !inputChannelsWithData.isEmpty();
 			}
-//			接收端反压
+//			直接拉取queue中的数据消费了
 			result = currentChannel.getNextBuffer();
 		} while (!result.isPresent());
 

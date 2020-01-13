@@ -211,6 +211,7 @@ public class WindowOperator<K, IN, ACC, OUT, W extends Window>
 		this.windowSerializer = checkNotNull(windowSerializer);
 		this.keySelector = checkNotNull(keySelector);
 		this.keySerializer = checkNotNull(keySerializer);
+//		这里包含window的reduce或者agg方法
 		this.windowStateDescriptor = windowStateDescriptor;
 		this.trigger = checkNotNull(trigger);
 		this.allowedLateness = allowedLateness;
@@ -302,7 +303,7 @@ public class WindowOperator<K, IN, ACC, OUT, W extends Window>
 
 		//if element is handled by none of assigned elementWindows
 		boolean isSkippedElement = true;
-
+//		这个key会对应我们的keyBy
 		final K key = this.<K>getKeyedStateBackend().getCurrentKey();
 
 		if (windowAssigner instanceof MergingWindowAssigner) {
@@ -398,8 +399,10 @@ public class WindowOperator<K, IN, ACC, OUT, W extends Window>
 //				状态中有个window的map<namespace,list<>>,
 //				后面通过这个来取整个窗口的数据
 				windowState.setCurrentNamespace(window);
+//				这里会调用用户的reduce和agg方法来处理窗口的
 				windowState.add(element.getValue());
 
+//				这个key会对应我们的keyBy()
 				triggerContext.key = key;
 //				会把这个窗口作为这个context的namespace
 				triggerContext.window = window;
@@ -409,7 +412,7 @@ public class WindowOperator<K, IN, ACC, OUT, W extends Window>
 
 //				来的元素判断时候触发，如果刚好在触发的正点上
 				if (triggerResult.isFire()) {
-//					从map中拿到整个窗口的数据contents
+//					从map中拿到整个窗口的数据contents,keyby的话会带上key去拉数据
 					ACC contents = windowState.get();
 					if (contents == null) {
 						continue;
