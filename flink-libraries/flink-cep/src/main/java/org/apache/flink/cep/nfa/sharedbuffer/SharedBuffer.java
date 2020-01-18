@@ -56,13 +56,14 @@ public class SharedBuffer<V> {
 	private static final String entriesStateName = "sharedBuffer-entries";
 	private static final String eventsStateName = "sharedBuffer-events";
 	private static final String eventsCountStateName = "sharedBuffer-events-count";
-
+//	存真正的数据，key是数据的id
 	private MapState<EventId, Lockable<V>> eventsBuffer;
 	/** The number of events seen so far in the stream per timestamp. */
 	private MapState<Long, Integer> eventsCount;
 	private MapState<NodeId, Lockable<SharedBufferNode>> entries;
 
 	/** The cache of eventsBuffer State. */
+//	<id+stimestamp, value+refNum>
 	private Map<EventId, Lockable<V>> eventsBufferCache = new HashMap<>();
 
 	/** The cache of sharedBufferNode. */

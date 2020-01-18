@@ -100,6 +100,8 @@ public class CepOperator<IN, KEY, OUT>
 
 //	key 时间戳 value 这个时间戳的所有数据
 	private transient MapState<Long, List<IN>> elementQueueState;
+
+//	每个cepOperator都会有一个SharedBuffer共享缓存区
 	private transient SharedBuffer<IN> partialMatches;
 
 	private transient InternalTimerService<VoidNamespace> timerService;
@@ -113,6 +115,7 @@ public class CepOperator<IN, KEY, OUT>
 	private long lastWatermark;
 
 	/** Comparator for secondary sorting. Primary sorting is always done on time. */
+//	cep是按顺序匹配的嘛，时间的主要的排序，当时间相等时使用什么作为二次排序
 	private final EventComparator<IN> comparator;
 
 	/**
@@ -170,6 +173,9 @@ public class CepOperator<IN, KEY, OUT>
 		FunctionUtils.setFunctionRuntimeContext(getUserFunction(), this.cepRuntimeContext);
 	}
 
+//	这里其实是个adapt方法
+//	！！！为什么要adapt这个状态的恢复呢，因为用户实现的方法map,fliter,flatmap状态都是在open方法中回去后赋值给局部变量
+//		  而这些不是用户实现的方法，没有地方把已恢复到context的状态赋值到局部变量里面去
 	@Override
 	public void initializeState(StateInitializationContext context) throws Exception {
 		super.initializeState(context);
@@ -179,7 +185,7 @@ public class CepOperator<IN, KEY, OUT>
 			new ValueStateDescriptor<>(
 				NFA_STATE_NAME,
 				new NFAStateSerializer()));
-// 这里初始化了一个共享缓存
+		// 这里通过checkpoint恢复了一个共享缓存
 		partialMatches = new SharedBuffer<>(context.getKeyedStateStore(), inputSerializer);
 
 		elementQueueState = context.getKeyedStateStore().getMapState(
@@ -239,7 +245,8 @@ public class CepOperator<IN, KEY, OUT>
 
 	@Override
 	public void processElement(StreamRecord<IN> element) throws Exception {
-		NFAState mnfaState = getNFAState();
+//		---------------------------------------------------------------------------------------
+//		NFAState mnfaState = getNFAState();
 //		获取用户对象
 		PatternProcessFunction<IN, OUT> userFunction = this.userFunction;
 //		根据用户对象获取pattern,先判断是否有监听
@@ -278,7 +285,6 @@ public class CepOperator<IN, KEY, OUT>
 //					将所有的state中开始状态作为下一个可能匹配状态放到NFAstate的partialMatches中
 					partialMatches.add(startingState);
 				}
-
 			}
 		}
 //		PatternSelectAdapter myclass = (PatternSelectAdapter)
@@ -313,7 +319,7 @@ public class CepOperator<IN, KEY, OUT>
 //		Collection<StateTransition<IN>> stateTransitions = mylj.getStateTransitions();
 //		nfa.states = newh;
 //		------ 上面都是自己的逻辑 -----
-
+// ------------------------------------------------------------------------------------------------------------------
 //		系统时间不用排序
 		if (isProcessingTime) {
 			if (comparator == null) {
@@ -345,6 +351,7 @@ public class CepOperator<IN, KEY, OUT>
 
 				// we have an event with a valid timestamp, so
 				// we buffer it until we receive the proper watermark.
+//				窗口是把record属于的窗口的右边界作为定时器，用于触发整个窗口的数据触发，但是cep是来一个都处理所以将当前水印+1作为定时器，只有水印向前推进了就触发
 //				只要不是迟到的数据，它就会把当前的水印时间的下一秒作为定时器？然后来下一条数据就触发计算？cep?
 				saveRegisterWatermarkTimer();
 //				把元素放到statemap中？时间戳作为他的key,原因是后面会把所有的数据的key即事件时间取出来，时间放到一个优先队列
@@ -403,12 +410,12 @@ public class CepOperator<IN, KEY, OUT>
 
 		// STEP 1		得到了所有数据事件时间的优先队列（按事件时间排序）
 		PriorityQueue<Long> sortedTimestamps = getSortedTimestamps();
-//		用于保存未匹配完成的状态，和已匹配完成的状态
+//		用于保存未匹配完成的状态，和已匹配完成的状态，这里get为空时会初始化，先遍历所有的找到其中为start的statu加入到半匹配队列
 		NFAState nfaState = getNFAState();
-		// STEP 2  只有数据按事件时间的优先队列里面的第一个元素事件时间小于当前水印就触发
+		// STEP 2  只有数据按事件时间的优先队列里面的第一个元素事件时间小于当前水印就触发,循环处理直到到当前水印
 		while (!sortedTimestamps.isEmpty() && sortedTimestamps.peek() <= timerService.currentWatermark()) {
 			long timestamp = sortedTimestamps.poll();
-//			处理超时导致未匹配完的数据
+//			更新水印时间 处理超时导致未匹配完的数据
 			advanceTime(nfaState, timestamp);
 			try (Stream<IN> elements = sort(elementQueueState.get(timestamp))) {
 				elements.forEachOrdered(
@@ -426,7 +433,7 @@ public class CepOperator<IN, KEY, OUT>
 		}
 
 		// STEP 3
-		//处理超时导致未匹配完的数据
+		//更新水印时间 为了处理超时导致未匹配完的数据
 		advanceTime(nfaState, timerService.currentWatermark());
 
 		// STEP 4
@@ -437,6 +444,7 @@ public class CepOperator<IN, KEY, OUT>
 		}
 
 		// STEP 5
+//		用于更新水印，这个水印会在接收数据的时候processElement方法作为判断这条数据是否能迟到
 		updateLastSeenWatermark(timerService.currentWatermark());
 	}
 

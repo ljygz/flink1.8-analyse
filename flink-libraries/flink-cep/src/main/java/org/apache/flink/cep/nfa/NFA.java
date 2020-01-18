@@ -187,6 +187,7 @@ public class NFA<T> {
 				IterativeCondition condition = transition.getCondition();
 //				这个地方为所有边 StateTransition 设置了cepRuntimeContext 这个是用来condition获取数据的通过name
 				FunctionUtils.setFunctionRuntimeContext(condition, cepRuntimeContext);
+//				调用初始化方法
 				FunctionUtils.openFunction(condition, conf);
 			}
 		}
@@ -306,7 +307,7 @@ public class NFA<T> {
 
 //			得到这个未完成状态的下一个计算状态们，
 //			这个元素属于这个未完成队列的下一个什么状态(可以是匹配的结束，也可以是未匹配完成的下一个，也可能是null即匹配失败)
-//			!!!!!!!!这里是会走用户判断逻辑的
+//			!!!!!!!!这里是会走用户判断逻辑的,返回的是下批用于匹配的状态
 			final Collection<ComputationState> newComputationStates = computeNextStates(
 				sharedBufferAccessor,
 				computationState,
@@ -366,9 +367,12 @@ public class NFA<T> {
 				newPartialMatches,
 				result);
 		} else {
+//			遍历每个是匹配最后完成匹配的ComputationState
 			for (ComputationState match : potentialMatches) {
+//				当匹配上，这里呢其实就是从共享缓存区提取数据Map，传入参数是一个Map<String, List<EventId>>
 				Map<String, List<T>> materializedMatch =
 					sharedBufferAccessor.materializeMatch(
+//						返回<patternname,List<eventID>> 通过deway号获取
 						sharedBufferAccessor.extractPatterns(
 							match.getPreviousBufferEntry(),
 							match.getVersion()).get(0)
@@ -573,7 +577,7 @@ public class NFA<T> {
 			computationState,
 			timerService,
 			event.getTimestamp());
-//		创建描述的图，这个地方会走，用户的filter逻辑代码
+//		这个地方会走，用户的filter逻辑代码,返回的其实就是哪些满足条件的边transition
 		final OutgoingEdges<T> outgoingEdges = createDecisionGraph(context, computationState, event.getEvent());
 
 		// Create the computing version based on the previously computed edges
@@ -587,6 +591,7 @@ public class NFA<T> {
 		final List<ComputationState> resultingComputationStates = new ArrayList<>();
 		for (StateTransition<T> edge : edges) {
 			switch (edge.getAction()) {
+//				!!!!Ignore的targetState还是自己 等于source
 				case IGNORE: {
 					if (!isStartState(computationState)) {
 						final DeweyNumber version;
@@ -616,6 +621,7 @@ public class NFA<T> {
 					}
 				}
 				break;
+//				take这里取了下一个用于下次匹配，如果是结束了，下一个会是cep系统自带的"&END"
 				case TAKE:
 					final State<T> nextState = edge.getTargetState();
 					final State<T> currentState = edge.getSourceState();
@@ -623,6 +629,7 @@ public class NFA<T> {
 					final NodeId previousEntry = computationState.getPreviousBufferEntry();
 
 					final DeweyNumber currentVersion = computationState.getVersion().increase(takeBranchesToVisit);
+//					使用当前dewey转下一个dewey,通过当前dewey数组
 					final DeweyNumber nextVersion = new DeweyNumber(currentVersion).addStage();
 					takeBranchesToVisit--;
 
@@ -746,7 +753,7 @@ public class NFA<T> {
 			State<T> currentState = states.pop();
 			Collection<StateTransition<T>> stateTransitions = currentState.getStateTransitions();
 
-			// check all state transitions for each state
+			// check all state transitions for each state虽然只有一个顶点但是有多条边，遍历所有的边
 			for (StateTransition<T> stateTransition : stateTransitions) {
 				try {
 //					这个地方会走用户代码逻辑，传入的这个Condition.filter()方法就是用户的

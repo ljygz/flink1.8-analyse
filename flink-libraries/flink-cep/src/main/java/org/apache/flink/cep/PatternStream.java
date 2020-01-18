@@ -119,6 +119,7 @@ public class PatternStream<T> {
 			final PatternProcessFunction<T, R> patternProcessFunction,
 			final TypeInformation<R> outTypeInfo) {
 
+//		这个里面其实已经包含了用pattern解析好的图status的图了
 		return builder.build(
 			outTypeInfo,
 			builder.clean(patternProcessFunction));

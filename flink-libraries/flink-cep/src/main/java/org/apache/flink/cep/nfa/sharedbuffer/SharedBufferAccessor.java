@@ -116,6 +116,7 @@ public class SharedBufferAccessor<V> implements AutoCloseable {
 	 * @param version Version of the previous relation which shall be extracted
 	 * @return Collection of previous relations starting with the given value
 	 */
+//	根据deway版本获取数据，用栈遍历获取向前指针
 	public List<Map<String, List<EventId>>> extractPatterns(
 		final NodeId nodeId,
 		final DeweyNumber version) {
@@ -136,6 +137,7 @@ public class SharedBufferAccessor<V> implements AutoCloseable {
 			while (!extractionStates.isEmpty()) {
 				final SharedBufferAccessor.ExtractionState extractionState = extractionStates.pop();
 				// current path of the depth first search
+//				深度优先搜索获取全部数据
 				final Stack<Tuple2<NodeId, SharedBufferNode>> currentPath = extractionState.getPath();
 				final Tuple2<NodeId, SharedBufferNode> currentEntry = extractionState.getEntry();
 
@@ -162,6 +164,7 @@ public class SharedBufferAccessor<V> implements AutoCloseable {
 						// we can only proceed if the current version is compatible to the version
 						// of this previous relation
 						final DeweyNumber currentVersion = extractionState.getVersion();
+//						判断杜威版本是否兼容
 						if (currentVersion.isCompatibleWith(edge.getDeweyNumber())) {
 							final NodeId target = edge.getTarget();
 							Stack<Tuple2<NodeId, SharedBufferNode>> newPath;
@@ -237,6 +240,7 @@ public class SharedBufferAccessor<V> implements AutoCloseable {
 	public void releaseNode(final NodeId node) throws Exception {
 		Lockable<SharedBufferNode> sharedBufferNode = sharedBuffer.getEntry(node);
 		if (sharedBufferNode != null) {
+//			根据引用的数量确定是否可以release
 			if (sharedBufferNode.release()) {
 				removeNode(node, sharedBufferNode.getElement());
 			} else {

@@ -87,6 +87,7 @@ public class State<T> implements Serializable {
 
 //	---------------------    下面这些 都是 为这个状态添加边的操作   ---------------------
 
+//	果然Ignore的source和target都是自己
 	public void addIgnore(final IterativeCondition<T> condition) {
 		addStateTransition(StateTransitionAction.IGNORE, this, condition);
 	}

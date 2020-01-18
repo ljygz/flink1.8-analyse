@@ -37,6 +37,7 @@ import java.util.Objects;
  */
 public final class Lockable<T> {
 
+//	引用次数用于确定，元素是否可以删除
 	private int refCounter;
 
 	private final T element;

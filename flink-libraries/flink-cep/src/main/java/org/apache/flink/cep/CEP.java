@@ -36,6 +36,7 @@ public class CEP {
 	 * @return Resulting pattern stream
 	 */
 	public static <T> PatternStream<T> pattern(DataStream<T> input, Pattern<T, ?> pattern) {
+//		这里得到的是最后一个pattern对象，每个pattern有他的前缀对象
 		return new PatternStream<>(input, pattern);
 	}
 
