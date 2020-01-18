@@ -213,6 +213,7 @@ public class RocksFullSnapshotStrategy<K> extends RocksDBSnapshotStrategyBase<K>
 			this.logPathString = logPathString;
 		}
 
+//		这是重写的rocksdb异步cp的具体线程
 		@Override
 		protected SnapshotResult<KeyedStateHandle> callInternal() throws Exception {
 			final KeyGroupRangeOffsets keyGroupRangeOffsets = new KeyGroupRangeOffsets(keyGroupRange);

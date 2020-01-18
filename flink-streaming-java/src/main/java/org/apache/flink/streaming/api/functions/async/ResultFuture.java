@@ -31,7 +31,6 @@ import java.util.Collection;
 public interface ResultFuture<OUT> {
 	/**
 	 * Completes the result future with a collection of result objects.
-	 *
 	 * <p>Note that it should be called for exactly one time in the user code.
 	 * Calling this function for multiple times will cause data lose.
 	 *

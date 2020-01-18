@@ -86,7 +86,7 @@ public class OrderedStreamElementQueue implements StreamElementQueue {
 		try {
 //			是否有数据可以拉取
 			while (queue.isEmpty() || !queue.peek().isDone()) {
-//				头锁等待
+//				没有数据头锁等待锁住
 				headIsCompleted.await();
 			}
 
@@ -223,6 +223,7 @@ public class OrderedStreamElementQueue implements StreamElementQueue {
 		lock.lockInterruptibly();
 
 		try {
+//			拉取出头当isDone唤醒emiter线程拉取头数据
 			if (!queue.isEmpty() && queue.peek().isDone()) {
 				LOG.debug("Signal ordered stream element queue has completed head element.");
 //				唤醒等待

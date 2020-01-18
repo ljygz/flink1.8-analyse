@@ -66,12 +66,14 @@ public abstract class AsyncSnapshotCallable<T> implements Callable<T> {
 		this.resourceCleanupOwnershipTaken = new AtomicBoolean(false);
 	}
 
+//	调动异步线程的具体逻辑
 	@Override
 	public T call() throws Exception {
 		final long startTime = System.currentTimeMillis();
 
 		if (resourceCleanupOwnershipTaken.compareAndSet(false, true)) {
 			try {
+//				等待实现类实现
 				T result = callInternal();
 				logAsyncSnapshotComplete(startTime);
 				return result;

@@ -68,6 +68,7 @@ public class StreamSource<OUT, SRC extends SourceFunction<OUT>> extends Abstract
 			? getExecutionConfig().getLatencyTrackingInterval()
 			: configuration.getLong(MetricOptions.LATENCY_INTERVAL);
 
+//		初始化周期性往下游发送LatencyMarks的emitter,LatencyMarks的时间为当前的系统时间
 		LatencyMarksEmitter<OUT> latencyEmitter = null;
 		if (latencyTrackingInterval > 0) {
 			latencyEmitter = new LatencyMarksEmitter<>(

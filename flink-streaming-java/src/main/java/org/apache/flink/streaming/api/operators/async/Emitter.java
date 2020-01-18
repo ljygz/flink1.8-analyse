@@ -82,7 +82,7 @@ public class Emitter<OUT> implements Runnable {
 				LOG.debug("Wait for next completed async stream element result.");
 //				拉取一波数据
 				AsyncResult streamElementEntry = streamElementQueue.peekBlockingly();
-
+//				往下游发送数据
 				output(streamElementEntry);
 			}
 		} catch (InterruptedException e) {

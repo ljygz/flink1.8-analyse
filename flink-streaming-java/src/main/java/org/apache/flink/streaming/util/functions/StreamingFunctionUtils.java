@@ -149,6 +149,7 @@ public final class StreamingFunctionUtils {
 		return false;
 	}
 
+//
 	public static void restoreFunctionState(
 			StateInitializationContext context,
 			Function userFunction) throws Exception {
@@ -174,6 +175,7 @@ public final class StreamingFunctionUtils {
 			StateInitializationContext context,
 			Function userFunction) throws Exception {
 
+//		kafka的source就用的这种function
 		if (userFunction instanceof CheckpointedFunction) {
 			((CheckpointedFunction) userFunction).initializeState(context);
 

@@ -46,6 +46,13 @@ import static java.util.Objects.requireNonNull;
  * @param <F>
  *            The type of the user function
  */
+
+// 这个udf就是说每个操作会插入调用用户自己实现的方法比如说richFunction的方法（类似代理增强了方法），用户方法需要实现响应的接口
+
+//udf 就是说用户的方法如果实现CheckpointedFunction了 在触发snapshot方法的时候会前执行一下用户实现的
+// snapshotState方法（一般保存一些自己要的东西到状态里面去，比如kafkabase，就会保存一下偏移量到状态里面去）
+//	接着在调用父类AbstractStreamOperator的snapshot方法保存所有状态state了
+//	initState状态恢复同理
 @PublicEvolving
 public abstract class AbstractUdfStreamOperator<OUT, F extends Function>
 		extends AbstractStreamOperator<OUT>
@@ -81,19 +88,27 @@ public abstract class AbstractUdfStreamOperator<OUT, F extends Function>
 	public void setup(StreamTask<?, ?> containingTask, StreamConfig config, Output<StreamRecord<OUT>> output) {
 //		设置output
 		super.setup(containingTask, config, output);
+//		设置context用于用户取状态
 		FunctionUtils.setFunctionRuntimeContext(userFunction, getRuntimeContext());
 
 	}
 
+//	触发快照，这里还没有真正保存到checkpoint，父类会调用这个方法在他自己的snapotSte中
 	@Override
 	public void snapshotState(StateSnapshotContext context) throws Exception {
+
 		super.snapshotState(context);
+//		udf难道这里还保存了用户方法中的状态？就是adapt调用了下用户的方法 在触发snapshot方法的时候会前执行一下用户实现的 下面同理
 		StreamingFunctionUtils.snapshotFunctionState(context, getOperatorStateBackend(), userFunction);
 	}
 
+//	用于状态恢复，这个context就是上面setup中给用户用于获取状态的context
+//	！！！为什么要adapt这个状态的恢复呢，因为用户实现的方法map,flatmap,filter状态都是在open方法中回去后赋值给局部变量
+//		  而这些不是用户实现的方法，没有地方把已恢复到context的状态赋值到局部变量里面去
 	@Override
 	public void initializeState(StateInitializationContext context) throws Exception {
 		super.initializeState(context);
+//		同上
 		StreamingFunctionUtils.restoreFunctionState(context, userFunction);
 	}
 

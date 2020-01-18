@@ -422,6 +422,7 @@ public class RocksDBKeyedStateBackend<K> extends AbstractKeyedStateBackend<K> {
 		long startTime = System.currentTimeMillis();
 
 		// flush everything into db before taking a snapshot
+//		先刷盘，因为要cp了
 		writeBatchWrapper.flush();
 
 		RocksDBSnapshotStrategyBase<K> chosenSnapshotStrategy =

@@ -152,6 +152,7 @@ public class WindowOperator<K, IN, ACC, OUT, W extends Window>
 	// ------------------------------------------------------------------------
 
 	/** The state in which the window contents is stored. Each window is a namespace */
+//	存储窗口中的数据
 	private transient InternalAppendingState<K, W, IN, ACC, ACC> windowState;
 
 	/**
@@ -750,6 +751,7 @@ public class WindowOperator<K, IN, ACC, OUT, W extends Window>
 	public class WindowContext implements InternalWindowFunction.InternalWindowContext {
 		protected W window;
 
+//		这个状态用于存储的
 		protected AbstractPerWindowStateStore windowState;
 
 		public WindowContext(W window) {

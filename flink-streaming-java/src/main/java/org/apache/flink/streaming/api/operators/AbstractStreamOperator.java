@@ -88,6 +88,7 @@ import java.util.Locale;
  *
  * @param <OUT> The output type of the operator
  */
+//包含默认的状态check保存方法snapshot
 @PublicEvolving
 public abstract class AbstractStreamOperator<OUT>
 		implements StreamOperator<OUT>, Serializable {
@@ -236,6 +237,7 @@ public abstract class AbstractStreamOperator<OUT>
 		return metrics;
 	}
 
+//
 	@Override
 	public final void initializeState() throws Exception {
 
@@ -389,6 +391,7 @@ public abstract class AbstractStreamOperator<OUT>
 //		这个future对象以后会被启动起来，这里所有都是空的，下面通过set赋值
 		OperatorSnapshotFutures snapshotInProgress = new OperatorSnapshotFutures();
 
+//		这个context可以获取keyoperator,和operator的outputStream
 		try (StateSnapshotContextSynchronousImpl snapshotContext = new StateSnapshotContextSynchronousImpl(
 				checkpointId,
 				timestamp,
@@ -396,6 +399,7 @@ public abstract class AbstractStreamOperator<OUT>
 				keyGroupRange,
 				getContainingTask().getCancelables())) {
 
+//			这个是子类重写然后调用自己的super.感觉里面也没做啥就是调用了用户的方法，如果用户想在cp时做些事情
 			snapshotState(snapshotContext);
 
 //			设置keyState和operator的Future用于保存到状态后端
@@ -448,6 +452,8 @@ public abstract class AbstractStreamOperator<OUT>
 	 *
 	 * @param context context that provides information and means required for taking a snapshot
 	 */
+//	这个方法在上面的snapshot方法中会被调用
+//	实现类重写他，然后调用父类super.snapshotState，然后调用自己的方法实现逻辑插入实现代理
 	public void snapshotState(StateSnapshotContext context) throws Exception {
 		final KeyedStateBackend<?> keyedStateBackend = getKeyedStateBackend();
 		//TODO all of this can be removed once heap-based timers are integrated with RocksDB incremental snapshots
@@ -491,6 +497,7 @@ public abstract class AbstractStreamOperator<OUT>
 	 *
 	 * @param context context that allows to register different states.
 	 */
+//	会用于状态恢复从checkpoint
 	public void initializeState(StateInitializationContext context) throws Exception {
 
 	}

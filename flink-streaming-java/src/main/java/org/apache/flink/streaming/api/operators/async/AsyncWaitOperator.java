@@ -49,10 +49,7 @@ import org.apache.flink.util.ExceptionUtils;
 import org.apache.flink.util.Preconditions;
 
 import java.util.Collection;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledFuture;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 
 /**
  * The {@link AsyncWaitOperator} allows to asynchronously process incoming stream records. For that
@@ -85,6 +82,7 @@ public class AsyncWaitOperator<IN, OUT>
 	private final int capacity;
 
 	/** Output mode for this operator. */
+//	根据client端使用配排序还是非排序的异步IO
 	private final AsyncDataStream.OutputMode outputMode;
 
 	/** Timeout for the async collectors. */
@@ -162,7 +160,6 @@ public class AsyncWaitOperator<IN, OUT>
 	@Override
 	public void open() throws Exception {
 		super.open();
-
 		// create the emitter
 		this.emitter = new Emitter<>(checkpointingLock, output, queue, this);
 
@@ -220,6 +217,7 @@ public class AsyncWaitOperator<IN, OUT>
 //			为什么先调用了，完成时的逻辑再加入队列 难道因为这也是异步的？
 			streamRecordBufferEntry.onComplete(
 				(StreamElementQueueEntry<Collection<OUT>> value) -> {
+
 					timerFuture.cancel(true);
 				},
 				executor);

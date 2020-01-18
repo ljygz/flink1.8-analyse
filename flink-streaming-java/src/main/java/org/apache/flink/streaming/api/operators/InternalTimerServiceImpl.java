@@ -39,7 +39,7 @@ import java.util.concurrent.ScheduledFuture;
 import static org.apache.flink.util.Preconditions.checkArgument;
 import static org.apache.flink.util.Preconditions.checkNotNull;
 
-/**定时器服务会遍历所有已注册的定时器，先执行
+/**定时器服务会遍历所有已注册的定时器，先执行 ,定时器服务里面还会包含当前水印时间
  * {@link InternalTimerService} that stores timers on the Java heap.
  */
 public class InternalTimerServiceImpl<K, N> implements InternalTimerService<N>, ProcessingTimeCallback {

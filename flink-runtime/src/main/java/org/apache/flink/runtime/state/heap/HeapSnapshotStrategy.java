@@ -156,6 +156,7 @@ class HeapSnapshotStrategy<K>
 //		这里创建了一个callable异步线程对象(这个callable才是真正处理存储状态的逻辑，里面的call方法又会调用下面实现的callInternal)，但是还是没有起起来
 		final AsyncSnapshotCallable<SnapshotResult<KeyedStateHandle>> asyncSnapshotCallable =
 			new AsyncSnapshotCallable<SnapshotResult<KeyedStateHandle>>() {
+//			异步线程具体调用
 				@Override
 				protected SnapshotResult<KeyedStateHandle> callInternal() throws Exception {
 

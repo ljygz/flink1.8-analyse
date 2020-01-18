@@ -141,6 +141,7 @@ import org.apache.flink.runtime.state.FunctionSnapshotContext;
  * @see ListCheckpointed
  * @see RuntimeContext
  */
+//如果checkpoint和restored的时候想插入调用自己的一些代码，方法就实现这个接口
 @PublicEvolving
 @SuppressWarnings("deprecation")
 public interface CheckpointedFunction {
@@ -153,6 +154,7 @@ public interface CheckpointedFunction {
 	 * @param context the context for drawing a snapshot of the operator
 	 * @throws Exception
 	 */
+//	用于触发checkpoint时保存状态的方法，里面执行一些用户操作后（一般都是把要保存的丢到state全局变量里面去），然后所有的state自动被持久化到checkPoint地址了
 	void snapshotState(FunctionSnapshotContext context) throws Exception;
 
 	/**
@@ -162,6 +164,7 @@ public interface CheckpointedFunction {
 	 * @param context the context for initializing the operator
 	 * @throws Exception
 	 */
+//	恢复得时候拿到checkpoint的数据（context可以拿到所有的状态值）去恢复backend状态后端
 	void initializeState(FunctionInitializationContext context) throws Exception;
 
 }
