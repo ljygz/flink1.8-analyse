@@ -653,6 +653,7 @@ public abstract class FlinkKafkaConsumerBase<T> extends RichParallelSourceFuncti
 		}
 	}
 
+//	这个sourceContext用于初始化fetcher实现类，调用了实现类的主循环，用这个context发送数据
 	@Override
 	public void run(SourceContext<T> sourceContext) throws Exception {
 		if (subscribedPartitionsToStartOffsets == null) {

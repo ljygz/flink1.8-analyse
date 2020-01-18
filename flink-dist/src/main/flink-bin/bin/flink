@@ -52,4 +52,5 @@ export FLINK_ROOT_DIR
 export FLINK_CONF_DIR
 
 # Add HADOOP_CLASSPATH to allow the usage of Hadoop file systems
+# 提交提交命令的基础类org.apache.flink.client.cli.CliFrontend
 exec $JAVA_RUN $JVM_ARGS "${log_setting[@]}" -classpath "`manglePathList "$CC_CLASSPATH:$INTERNAL_HADOOP_CLASSPATHS"`" org.apache.flink.client.cli.CliFrontend "$@"

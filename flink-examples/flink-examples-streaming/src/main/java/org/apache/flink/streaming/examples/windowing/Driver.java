@@ -1,5 +1,6 @@
 package org.apache.flink.streaming.examples.windowing;
 import org.apache.flink.api.common.functions.JoinFunction;
+import org.apache.flink.api.common.functions.ReduceFunction;
 import org.apache.flink.api.java.functions.KeySelector;
 import org.apache.flink.api.java.tuple.Tuple;
 import org.apache.flink.api.java.tuple.Tuple3;
@@ -10,11 +11,15 @@ import org.apache.flink.streaming.api.datastream.IterativeStream;
 import org.apache.flink.streaming.api.datastream.KeyedStream;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
 import org.apache.flink.streaming.api.functions.AssignerWithPunctuatedWatermarks;
+import org.apache.flink.streaming.api.functions.windowing.ProcessWindowFunction;
 import org.apache.flink.streaming.api.watermark.Watermark;
 import org.apache.flink.streaming.api.windowing.assigners.TumblingEventTimeWindows;
 import org.apache.flink.streaming.api.windowing.time.Time;
+import org.apache.flink.streaming.api.windowing.windows.TimeWindow;
+import org.apache.flink.util.Collector;
 
 import javax.annotation.Nullable;
+import java.util.Iterator;
 
 public class Driver {
     public static void main(String[] args) throws Exception {
@@ -26,10 +31,11 @@ public class Driver {
         DataStreamSource<Tuple3<String, Long, String>> sourceDateStream = env.fromElements(
              new Tuple3<String, Long, String>("a",1000000001000L,"22")
             ,new Tuple3<String, Long, String>("a",1000000002000L,"23")
+			,new Tuple3<String, Long, String>("b",1000000003000L,"23")
             ,new Tuple3<String, Long, String>("a",1000000003000L,"23")
             ,new Tuple3<String, Long, String>("a",1000000004000L,"24")
             ,new Tuple3<String, Long, String>("f",1000000005000L,"23")
-            ,new Tuple3<String, Long, String>("g",1000000006000L,"23")
+
         );
 		KeyedStream<Tuple3<String, Long, String>, Tuple> source = sourceDateStream
 			.assignTimestampsAndWatermarks(new AssignerWithPunctuatedWatermarks<Tuple3<String, Long, String>>() {
@@ -37,7 +43,7 @@ public class Driver {
 
 				@Nullable
 				public Watermark checkAndGetNextWatermark(Tuple3<String, Long, String> stringLongStringTuple3, long l) {
-					return new Watermark(maxTimsStamp - 1000);
+					return new Watermark(maxTimsStamp - 2000);
 				}
 
 				public long extractTimestamp(Tuple3<String, Long, String> stringLongStringTuple3, long per) {
@@ -49,26 +55,36 @@ public class Driver {
 				}
 			}).keyBy(0);
 
-		source.join(source).where(new KeySelector<Tuple3<String, Long, String>, Long>() {
-		   @Override
-		   public Long getKey(Tuple3<String, Long, String> value) throws Exception {
-			   return value.f1;
-		   }
-	    }).equalTo(new KeySelector<Tuple3<String, Long, String>, Long>() {
-		   @Override
-		   public Long getKey(Tuple3<String, Long, String> value) throws Exception {
-			   return value.f1;
-		   }
-	    })
+		source
+//			.join(source).where(new KeySelector<Tuple3<String, Long, String>, Long>() {
+//		   @Override
+//		   public Long getKey(Tuple3<String, Long, String> value) throws Exception {
+//			   return value.f1;
+//		   }
+//	    }).equalTo(new KeySelector<Tuple3<String, Long, String>, Long>() {
+//		   @Override
+//		   public Long getKey(Tuple3<String, Long, String> value) throws Exception {
+//			   return value.f1;
+//		   }
+//	    })
 		 .window(TumblingEventTimeWindows.of(Time.seconds(3L)))
 		 .allowedLateness(Time.seconds(10))
-		 .apply(new JoinFunction<Tuple3<String, Long, String>, Tuple3<String, Long, String>, Tuple3<String, Long, String>>() {
+		 .reduce(new ReduceFunction<Tuple3<String, Long, String>>() {
 			 @Override
-			 public Tuple3<String, Long, String> join(Tuple3<String, Long, String> first, Tuple3<String, Long, String> second) throws Exception {
-				 System.out.println("join one");
-				 return first;
+			 public Tuple3<String, Long, String> reduce(Tuple3<String, Long, String> value1, Tuple3<String, Long, String> value2) throws Exception {
+				 return null;
 			 }
 		 }).print();
+//		 .process(new ProcessWindowFunction<Tuple3<String, Long, String>, Object, Tuple, TimeWindow>() {
+//			 @Override
+//			 public void process(Tuple tuple, Context context, Iterable<Tuple3<String, Long, String>> elements, Collector<Object> out) throws Exception {
+//				 Iterator<Tuple3<String, Long, String>> iterator = elements.iterator();
+//				 while (iterator.hasNext()){
+//					 System.out.print(iterator.next().toString());
+//				 }
+//				 System.out.println("");
+//			 }
+//		 }).setParallelism(2).print();
 //        异步io防抖动
 //        AsyncDataStream.unorderedWait()
 

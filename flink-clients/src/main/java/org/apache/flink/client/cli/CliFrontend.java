@@ -94,6 +94,7 @@ import static org.apache.flink.client.program.ClusterClient.MAX_SLOTS_UNKNOWN;
 /**
  * Implementation of a simple command line frontend for executing programs.
  */
+//提交命令类
 public class CliFrontend {
 
 	private static final Logger LOG = LoggerFactory.getLogger(CliFrontend.class);
