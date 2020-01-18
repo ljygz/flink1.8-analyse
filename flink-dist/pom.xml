@@ -25,7 +25,7 @@ under the License.
 	<parent>
 		<groupId>org.apache.flink</groupId>
 		<artifactId>flink-parent</artifactId>
-		<version>1.8-SNAPSHOT</version>
+		<version>1.8.0-CEPplus</version>
 		<relativePath>..</relativePath>
 	</parent>
 
@@ -408,7 +408,7 @@ under the License.
 				<dependency>
 					<groupId>org.apache.flink</groupId>
 					<artifactId>flink-shaded-hadoop2-uber</artifactId>
-					<version>${hadoop.version}-${project.version}</version>
+					<version>${hadoop.version}-1.8-SNAPSHOT</version>
 					<!--
                         Exclusion of flink-shaded-hadoop2 not necessary, dependencies
                         are shaded away properly by flink-shaded-hadoop2-uber.
