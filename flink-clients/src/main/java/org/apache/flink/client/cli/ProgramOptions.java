@@ -69,9 +69,11 @@ public abstract class ProgramOptions extends CommandLineOptions {
 				line.getOptionValues(ARGS_OPTION.getOpt()) :
 				line.getArgs();
 
+//		拿到jar文件地址
 		if (line.hasOption(JAR_OPTION.getOpt())) {
 			this.jarFilePath = line.getOptionValue(JAR_OPTION.getOpt());
 		}
+//		arg是为取option 能匹配上的所有以后剩下的参数
 		else if (args.length > 0) {
 			jarFilePath = args[0];
 			args = Arrays.copyOfRange(args, 1, args.length);
@@ -93,7 +95,7 @@ public abstract class ProgramOptions extends CommandLineOptions {
 			}
 		}
 		this.classpaths = classpaths;
-
+//		拿到运行哪个类
 		this.entryPointClass = line.hasOption(CLASS_OPTION.getOpt()) ?
 				line.getOptionValue(CLASS_OPTION.getOpt()) : null;
 
