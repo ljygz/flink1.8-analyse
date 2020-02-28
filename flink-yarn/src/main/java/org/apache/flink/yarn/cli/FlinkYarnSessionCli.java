@@ -819,6 +819,7 @@ public class FlinkYarnSessionCli extends AbstractCustomCommandLine<ApplicationId
 		}
 	}
 
+//	yarn session 模式才走这里启动了
 	public static void main(final String[] args) {
 		final String configurationDirectory = CliFrontend.getConfigurationDirectoryFromEnv();
 

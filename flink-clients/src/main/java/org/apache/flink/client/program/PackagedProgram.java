@@ -193,15 +193,20 @@ public class PackagedProgram {
 		// now that we have an entry point, we can extract the nested jar files (if any)
 		this.extractedTempLibraries = extractContainedLibraries(jarFileUrl);
 		this.classpaths = classpaths;
+//		将所有的classpath和userPath路径构建的类加载器
 		this.userCodeClassLoader = JobWithJars.buildUserCodeClassLoader(getAllLibraries(), classpaths, getClass().getClassLoader());
 
 		// load the entry point class
+//		!!!!!!!!!!1通过类加载器加载主类!!!!!!!!!!
 		this.mainClass = loadMainClass(entryPointClassName, userCodeClassLoader);
 
+
+//		通过类加载的主类，如果是program的子类就直接获取plan了如果不是，就看这个主类有没有main方法
 		// if the entry point is a program, instantiate the class and get the plan
 		if (Program.class.isAssignableFrom(this.mainClass)) {
 			Program prg = null;
 			try {
+//				把运行的主类转换成一个program通过反射实例化对象,如果有的话
 				prg = InstantiationUtil.instantiate(this.mainClass.asSubclass(Program.class), Program.class);
 			} catch (Exception e) {
 				// validate that the class has a main method at least.
@@ -216,6 +221,7 @@ public class PackagedProgram {
 			}
 			this.program = prg;
 		} else if (hasMainMethod(mainClass)) {
+//			有main方法的program就是null
 			this.program = null;
 		} else {
 			throw new ProgramInvocationException("The given program class neither has a main(String[]) method, nor does it implement the " +

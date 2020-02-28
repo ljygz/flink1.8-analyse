@@ -392,6 +392,7 @@ public abstract class ClusterClient<T> {
 	public JobSubmissionResult run(PackagedProgram prog, int parallelism)
 			throws ProgramInvocationException, ProgramMissingJobException {
 		Thread.currentThread().setContextClassLoader(prog.getUserCodeClassLoader());
+//		这里主类是实现了program的才会执行
 		if (prog.isUsingProgramEntryPoint()) {
 
 			final JobWithJars jobWithJars;
@@ -403,6 +404,7 @@ public abstract class ClusterClient<T> {
 
 			return run(jobWithJars, parallelism, prog.getSavepointSettings());
 		}
+//		！！！！！！这里才是我们通常main方法执行的地方
 		else if (prog.isUsingInteractiveMode()) {
 			log.info("Starting program in interactive mode (detached: {})", isDetached());
 
@@ -420,6 +422,7 @@ public abstract class ClusterClient<T> {
 
 			try {
 				// invoke main method
+//				！！！！调用用户的main方法
 				prog.invokeInteractiveModeForExecution();
 				if (lastJobExecutionResult == null && factory.getLastEnvCreated() == null) {
 					throw new ProgramMissingJobException("The program didn't contain a Flink job.");

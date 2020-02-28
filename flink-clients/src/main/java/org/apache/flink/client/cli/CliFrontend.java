@@ -115,7 +115,7 @@ public class CliFrontend {
 	// --------------------------------------------------------------------------------------------
 
 	private final Configuration configuration;
-
+//	这里面包含了yarnsession对象的
 	private final List<CustomCommandLine<?>> customCommandLines;
 
 	private final Options customCommandLineOptions;
@@ -181,12 +181,15 @@ public class CliFrontend {
 	protected void run(String[] args) throws Exception {
 		LOG.info("Running 'run' command.");
 
+//		这个CliFrontendParser包含所有的命令option
 		final Options commandOptions = CliFrontendParser.getRunCommandOptions();
 
 		final Options commandLineOptions = CliFrontendParser.mergeOptions(commandOptions, customCommandLineOptions);
 
+//		解析好的对应的参数
 		final CommandLine commandLine = CliFrontendParser.parse(commandLineOptions, args, true);
 
+//		运行参数，并行度，主类等
 		final RunOptions runOptions = new RunOptions(commandLine);
 
 		// evaluate help flag
@@ -202,6 +205,8 @@ public class CliFrontend {
 		final PackagedProgram program;
 		try {
 			LOG.info("Building program from JAR file");
+//			！！！！！！包含了用户的主类的类加载器，和程序的plan
+//			这里如果主类是实现了program的就直接获取plan了，如果只是main方法的这里的this.plan就是null
 			program = buildProgram(runOptions);
 		}
 		catch (FileNotFoundException e) {
@@ -211,6 +216,7 @@ public class CliFrontend {
 		final CustomCommandLine<?> customCommandLine = getActiveCustomCommandLine(commandLine);
 
 		try {
+//			运行
 			runProgram(customCommandLine, commandLine, runOptions, program);
 		} finally {
 			program.deleteExtractedLibraries();
@@ -236,6 +242,7 @@ public class CliFrontend {
 				final JobGraph jobGraph = PackagedProgramUtils.createJobGraph(program, configuration, parallelism);
 
 				final ClusterSpecification clusterSpecification = customCommandLine.getClusterSpecification(commandLine);
+
 				client = clusterDescriptor.deployJobCluster(
 					clusterSpecification,
 					jobGraph,
@@ -257,6 +264,8 @@ public class CliFrontend {
 					// also in job mode we have to deploy a session cluster because the job
 					// might consist of multiple parts (e.g. when using collect)
 					final ClusterSpecification clusterSpecification = customCommandLine.getClusterSpecification(commandLine);
+//					！！！！！！调度集群在yarn上运行，为了后面向他提交任务
+//							常遇见的异常Couldn't deploy Yarn session cluster 就是从这里出现的
 					client = clusterDescriptor.deploySessionCluster(clusterSpecification);
 					// if not running in detached mode, add a shutdown hook to shut down cluster if client exits
 					// there's a race-condition here if cli is killed before shutdown hook is installed
@@ -284,7 +293,7 @@ public class CliFrontend {
 					} else if (ExecutionConfig.PARALLELISM_DEFAULT == userParallelism) {
 						userParallelism = defaultParallelism;
 					}
-
+//					运行程序，这里的clientrest往远端提交
 					executeProgram(program, client, userParallelism);
 				} finally {
 					if (clusterId == null && !client.isDetached()) {
@@ -811,6 +820,7 @@ public class CliFrontend {
 	protected void executeProgram(PackagedProgram program, ClusterClient<?> client, int parallelism) throws ProgramMissingJobException, ProgramInvocationException {
 		logAndSysout("Starting execution of program");
 
+
 		final JobSubmissionResult result = client.run(program, parallelism);
 
 		if (null == result) {
@@ -857,10 +867,11 @@ public class CliFrontend {
 			throw new FileNotFoundException("JAR file is not a file: " + jarFile);
 		}
 
-		// Get assembler class
+		// Get assembler class 获取入口类
 		String entryPointClass = options.getEntryPointClassName();
 
 		PackagedProgram program = entryPointClass == null ?
+//			这种主类如果是program的实现类直接设置plan了，如果是只有main方法这个中的this.plan就是null了
 				new PackagedProgram(jarFile, classpaths, programArgs) :
 				new PackagedProgram(jarFile, classpaths, entryPointClass, programArgs);
 
@@ -1039,6 +1050,7 @@ public class CliFrontend {
 		}
 
 		// get action
+//		取第一个操作参数
 		String action = args[0];
 
 		// remove action from parameters
@@ -1047,6 +1059,7 @@ public class CliFrontend {
 		try {
 			// do action
 			switch (action) {
+//				提交job
 				case ACTION_RUN:
 					run(params);
 					return 0;
@@ -1107,6 +1120,7 @@ public class CliFrontend {
 		EnvironmentInformation.logEnvironmentInfo(LOG, "Command Line Client", args);
 
 		// 1. find the configuration directory
+//		FLINK-CONF-DIR
 		final String configurationDirectory = getConfigurationDirectoryFromEnv();
 
 		// 2. load the global configuration
@@ -1124,6 +1138,9 @@ public class CliFrontend {
 
 			SecurityUtils.install(new SecurityConfiguration(cli.configuration));
 			int retCode = SecurityUtils.getInstalledContext()
+//				解析命令行并开始请求操作
+//				这里分 有hadoop的走doas
+//		   			   没有的就是默认，直接调用call
 					.runSecured(() -> cli.parseParameters(args));
 			System.exit(retCode);
 		}

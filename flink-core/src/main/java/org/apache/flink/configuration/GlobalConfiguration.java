@@ -111,7 +111,7 @@ public final class GlobalConfiguration {
 				"The Flink config file '" + yamlConfigFile +
 					"' (" + confDirFile.getAbsolutePath() + ") does not exist.");
 		}
-
+//		yaml文件中的所有kv
 		Configuration configuration = loadYAMLResource(yamlConfigFile);
 
 		if (dynamicProperties != null) {
